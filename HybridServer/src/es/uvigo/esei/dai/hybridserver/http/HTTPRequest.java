@@ -1,11 +1,46 @@
 package es.uvigo.esei.dai.hybridserver.http;
 
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.Reader;
 import java.util.Map;
 
 public class HTTPRequest {
-	public HTTPRequest(Reader reader) throws IOException, HTTPParseException {
+
+	private HTTPRequestMethod method;
+	private String resourceChain;
+	private String[] resourcePath;
+	private String resourceName;
+	private Map<String, String> resourceParameters;
+	private String httpVersion;
+	private Map<String, String> headerParameters;
+	private String content;
+	private int contentLength;
+
+	public HTTPRequest(BufferedReader reader) throws IOException, HTTPParseException {
+
+		String s = reader.readLine();
+
+		String[] firstLine = s.split(" ");
+		method = HTTPRequestMethod.valueOf(firstLine[0]);
+
+		String[] nameAndParameters = firstLine[1].split("?");
+		resourceName = nameAndParameters[0].substring(s.indexOf("/"));
+
+		String[] parameters = nameAndParameters[1].split("&");
+		String[] keyAndValue;
+		for (int i = 0; i < parameters.length; i++) {
+			keyAndValue = parameters[i].split("=");
+			resourceParameters.put(keyAndValue[0], keyAndValue[1]);
+		}
+
+		while (!(s = reader.readLine()).equals("")) {
+			String[] values = s.split(": ");
+			headerParameters.put(values[0], values[1]);
+		}
+		
+		if (headerParameters.containsKey("Content-Length")) {
+			contentLength = Integer.parseInt(headerParameters.get("Content-Length"));
+		}
 	}
 
 	public HTTPRequestMethod getMethod() {
