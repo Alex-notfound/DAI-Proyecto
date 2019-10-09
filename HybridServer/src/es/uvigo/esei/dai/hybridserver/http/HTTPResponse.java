@@ -3,63 +3,66 @@ package es.uvigo.esei.dai.hybridserver.http;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class HTTPResponse {
+
+	HTTPResponseStatus status;
+	String version;
+	String content;
+	Map<String, String> parameters;
+
 	public HTTPResponse() {
 	}
 
 	public HTTPResponseStatus getStatus() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.status;
 	}
 
 	public void setStatus(HTTPResponseStatus status) {
+		this.status = status;
 	}
 
 	public String getVersion() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.version;
 	}
 
 	public void setVersion(String version) {
+		this.version = version;
 	}
 
 	public String getContent() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.content;
 	}
 
 	public void setContent(String content) {
+		this.content = content;
 	}
 
 	public Map<String, String> getParameters() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.parameters;
 	}
 
 	public String putParameter(String name, String value) {
-		// TODO Auto-generated method stub
-		return null;
+		return this.parameters.put(name, value);
 	}
 
 	public boolean containsParameter(String name) {
-		// TODO Auto-generated method stub
-		return false;
+		return this.parameters.containsKey(name);
 	}
 
 	public String removeParameter(String name) {
-		// TODO Auto-generated method stub
-		return null;
+		return this.parameters.remove(name);
 	}
 
 	public void clearParameters() {
+		this.parameters.clear();
 	}
 
 	public List<String> listParameters() {
-		// TODO Auto-generated method stub
-		return null;
+		return new ArrayList<String>(this.parameters.values());
 	}
 
 	public void print(Writer writer) throws IOException {
