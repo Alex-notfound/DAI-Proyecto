@@ -43,15 +43,30 @@ public class HTTPRequest {
 			}
 		}
 
-		while ((s = bufferedReader.readLine()) != "" && s != null) {
-			if (s.length() > 0) {
-				String[] values = s.split(": ");
+		while (!(s = bufferedReader.readLine()).isEmpty() && s != null) {
+			String[] values = s.split(": ");
+			if (values.length > 1) {
 				headerParameters.put(values[0], values[1]);
 			}
 		}
 
 		if (headerParameters.containsKey("Content-Length")) {
 			contentLength = Integer.parseInt(headerParameters.get("Content-Length"));
+		}
+
+		char[] buffer = new char[contentLength];
+		bufferedReader.read(buffer);
+		for (int i = 0; i < buffer.length; i++) {
+			this.content = java.net.URLDecoder.decode(String.valueOf(buffer), "UTF-8");
+		}
+
+		if (this.method.equals(HTTPRequestMethod.POST)) {
+			String[] parameters = content.split("&");
+			String[] keyAndValue;
+			for (int i = 0; i < parameters.length; i++) {
+				keyAndValue = parameters[i].split("=");
+				resourceParameters.put(keyAndValue[0], keyAndValue[1]);
+			}
 		}
 	}
 
