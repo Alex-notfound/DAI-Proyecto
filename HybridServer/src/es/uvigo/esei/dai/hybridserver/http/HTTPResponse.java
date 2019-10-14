@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -12,7 +13,7 @@ public class HTTPResponse {
 	HTTPResponseStatus status;
 	String version;
 	String content;
-	Map<String, String> parameters;
+	Map<String, String> parameters = new LinkedHashMap<>();
 
 	public HTTPResponse() {
 	}
@@ -66,6 +67,20 @@ public class HTTPResponse {
 	}
 
 	public void print(Writer writer) throws IOException {
+		writer.write(this.version + " " + this.status.getCode() + " " + this.status.getStatus());
+		for (Map.Entry<String, String> entry : parameters.entrySet()) {
+			System.out.println(entry.getKey());
+			writer.write(entry.getKey() + ": " + entry.getValue() + "\r\n");
+		}
+		writer.write("\r\n");
+		if (content != null) {
+			writer.write("Content-Length: " + content.length() + "\r\n\r\n");
+			writer.write(this.content);
+		} else {
+			writer.write("\r\n");
+		}
+		System.out.println(writer.toString());
+		writer.close();
 	}
 
 	@Override
