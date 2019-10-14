@@ -69,7 +69,6 @@ public class HTTPResponse {
 	public void print(Writer writer) throws IOException {
 		writer.write(this.version + " " + this.status.getCode() + " " + this.status.getStatus());
 		for (Map.Entry<String, String> entry : parameters.entrySet()) {
-			System.out.println(entry.getKey());
 			writer.write(entry.getKey() + ": " + entry.getValue() + "\r\n");
 		}
 		writer.write("\r\n");
@@ -79,7 +78,6 @@ public class HTTPResponse {
 		} else {
 			writer.write("\r\n");
 		}
-		System.out.println(writer.toString());
 		writer.close();
 	}
 
