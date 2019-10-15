@@ -24,6 +24,9 @@ public class HTTPRequest {
 		BufferedReader bufferedReader = new BufferedReader(reader);
 		String s = bufferedReader.readLine();
 		String[] firstLine = s.split(" ");
+		if (firstLine.length != 3) {
+			throw new HTTPParseException();
+		}
 		this.method = HTTPRequestMethod.valueOf(firstLine[0]);
 		this.resourceChain = firstLine[1];
 		this.httpVersion = firstLine[2];
@@ -45,9 +48,10 @@ public class HTTPRequest {
 
 		while (!(s = bufferedReader.readLine()).isEmpty() && s != null) {
 			String[] values = s.split(": ");
-			if (values.length > 1) {
-				headerParameters.put(values[0], values[1]);
+			if (values.length != 2) {
+				throw new HTTPParseException();
 			}
+			headerParameters.put(values[0], values[1]);
 		}
 
 		if (headerParameters.containsKey("Content-Length")) {
