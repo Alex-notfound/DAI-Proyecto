@@ -18,7 +18,7 @@ public class HybridServer {
 	private boolean stop;
 
 	private Properties properties = new Properties();
-	private ExecutorService threadPool = Executors.newFixedThreadPool(10);
+	private ExecutorService threadPool = Executors.newFixedThreadPool(1);
 	private Controller controller;
 
 //TODO: Preguntar si está bien y si hay que llamar a close()
@@ -60,13 +60,12 @@ public class HybridServer {
 			public void run() {
 				try (final ServerSocket serverSocket = new ServerSocket(SERVICE_PORT)) {
 					while (true) {
-						try (Socket socket = serverSocket.accept()) {
-							if (stop)
-								break;
-							// MIO:
-							threadPool.execute(new ServiceThread(socket));
-							// Responder al cliente
-						}
+						Socket socket = serverSocket.accept();
+						if (stop)
+							break;
+						// MIO:
+						threadPool.execute(new ServiceThread(socket));
+						// Responder al cliente
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -76,6 +75,7 @@ public class HybridServer {
 
 		this.stop = false;
 		this.serverThread.start();
+
 	}
 
 	public void stop() {
