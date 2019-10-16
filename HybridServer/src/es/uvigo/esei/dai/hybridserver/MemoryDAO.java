@@ -2,10 +2,16 @@ package es.uvigo.esei.dai.hybridserver;
 
 import java.util.Map;
 
-public class MemoryDAO {
+public class MemoryDAO implements DAO {
+
+	Map<String, String> pages;
 
 	public MemoryDAO(Map<String, String> pages) {
-		// TODO Auto-generated constructor stub
+		this.pages = pages;
+	}
+
+	public String get(String uuid) {
+		return pages.get(uuid);
 	}
 
 }

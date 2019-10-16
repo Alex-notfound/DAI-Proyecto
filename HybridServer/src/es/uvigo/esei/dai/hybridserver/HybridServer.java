@@ -34,20 +34,19 @@ public class HybridServer {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		// TODO: Como se pilla el parametro de properties?
-//		threadPool = Executors.newFixedThreadPool((int) properties.get("numClients"));
+		threadPool = Executors.newFixedThreadPool((int) properties.get("numClients"));
 
 	}
 
 	public HybridServer(Map<String, String> pages) {
 		this.controller = new Controller(new MemoryDAO(pages));
-//		new ServiceThread(socket,this.controller).start();
+//		threadPool = Executors.newFixedThreadPool((int) properties.get("numClients"));
+//		threadPool.execute(new ServiceThread(socket, this.controller));
 	}
 
 	public HybridServer(Properties properties) {
 		this.properties = properties;
-		// TODO: Como se pilla el parametro de properties?
-//		threadPool = Executors.newFixedThreadPool((int) properties.get("numClients"));
+		threadPool = Executors.newFixedThreadPool((int) properties.get("numClients"));
 	}
 
 	public int getPort() {
@@ -55,6 +54,7 @@ public class HybridServer {
 	}
 
 	public void start() {
+		Controller controller = this.controller;
 		this.serverThread = new Thread() {
 			@Override
 			public void run() {
@@ -63,9 +63,12 @@ public class HybridServer {
 						Socket socket = serverSocket.accept();
 						if (stop)
 							break;
-						// MIO:
-						threadPool.execute(new ServiceThread(socket));
 						// Responder al cliente
+						if (controller == null) {
+							threadPool.execute(new ServiceThread(socket));
+						} else {
+							threadPool.execute(new ServiceThread(socket, controller));
+						}
 					}
 				} catch (IOException e) {
 					e.printStackTrace();

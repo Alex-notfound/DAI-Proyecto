@@ -1,9 +1,24 @@
 package es.uvigo.esei.dai.hybridserver;
 
+import java.util.Map;
+
 public class Controller {
 
+	MemoryDAO memoryDAO;
+
 	public Controller(MemoryDAO memoryDAO) {
-		// TODO Auto-generated constructor stub
+		this.memoryDAO = memoryDAO;
 	}
 
+	public String get(String uuid) {
+		return this.memoryDAO.pages.get(uuid);
+	}
+	
+	public Map<String, String> getAll() {
+		return this.memoryDAO.pages;
+	}
+
+	public boolean pageFound(String uuid) {
+		return this.memoryDAO.pages.containsKey(uuid);
+	}
 }
