@@ -34,7 +34,8 @@ public class HybridServer {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		threadPool = Executors.newFixedThreadPool((int) properties.get("numClients"));
+		System.out.println(properties.get("numClients"));
+		threadPool = Executors.newFixedThreadPool(Integer.parseInt(properties.getProperty("numClients")));
 
 	}
 
@@ -46,7 +47,8 @@ public class HybridServer {
 
 	public HybridServer(Properties properties) {
 		this.properties = properties;
-		threadPool = Executors.newFixedThreadPool((int) properties.get("numClients"));
+//		threadPool = Executors.newFixedThreadPool(Integer.parseInt(properties.getProperty("numClients")));
+		threadPool = Executors.newFixedThreadPool(1);
 	}
 
 	public int getPort() {

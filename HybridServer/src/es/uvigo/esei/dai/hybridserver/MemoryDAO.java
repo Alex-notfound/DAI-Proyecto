@@ -1,6 +1,7 @@
 package es.uvigo.esei.dai.hybridserver;
 
 import java.util.Map;
+import java.util.UUID;
 
 public class MemoryDAO implements DAO {
 
@@ -11,7 +12,17 @@ public class MemoryDAO implements DAO {
 	}
 
 	public String get(String uuid) {
-		return pages.get(uuid);
+		return this.pages.get(uuid);
+	}
+
+	public void delete(String uuid) {
+		this.pages.remove(uuid);
+	}
+
+	public String add(String content) {
+		UUID randomUuid = UUID.randomUUID();
+		this.pages.put(randomUuid.toString(), content);
+		return randomUuid.toString();
 	}
 
 }

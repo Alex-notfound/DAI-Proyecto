@@ -67,25 +67,18 @@ public class HTTPResponse {
 	}
 
 	public void print(Writer writer) throws IOException {
-		try {
-
-			writer.write(this.version + " " + this.status.getCode() + " " + this.status.getStatus());
-			for (Map.Entry<String, String> entry : parameters.entrySet()) {
-				writer.write(entry.getKey() + ": " + entry.getValue() + "\r\n");
-			}
-			writer.write("\r\n");
-			if (content != null) {
-				writer.write("Content-Length: " + content.length() + "\r\n\r\n");
-				writer.write(this.content);
-			} else {
-				writer.write("\r\n");
-			}
-			writer.close();
-		} catch (Exception e) {
-			System.err.println("ERROR");
-			writer.write("500 Internal Server Error");
-			writer.close();
+		writer.write(this.version + " " + this.status.getCode() + " " + this.status.getStatus());
+		for (Map.Entry<String, String> entry : parameters.entrySet()) {
+			writer.write(entry.getKey() + ": " + entry.getValue() + "\r\n");
 		}
+		writer.write("\r\n");
+		if (content != null) {
+			writer.write("Content-Length: " + content.length() + "\r\n\r\n");
+			writer.write(this.content);
+		} else {
+			writer.write("\r\n");
+		}
+		writer.close();
 	}
 
 	@Override
