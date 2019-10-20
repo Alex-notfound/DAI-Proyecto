@@ -6,6 +6,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.Map;
 
 import es.uvigo.esei.dai.hybridserver.http.HTTPParseException;
@@ -21,6 +22,7 @@ public class ServiceThread implements Runnable {
 
 	public ServiceThread(Socket clientSocket) {
 		this.socket = clientSocket;
+		this.controller = new Controller(new MemoryDAO(new HashMap<String, String>()));
 	}
 
 	public ServiceThread(Socket clientSocket, Controller controller) {
@@ -36,11 +38,11 @@ public class ServiceThread implements Runnable {
 		try {
 			reader = new InputStreamReader(socket.getInputStream());
 			HTTPRequest request = new HTTPRequest(reader);
-			if (request.getResourceParameters().containsKey("uuid")) {
 
+			// TODO: Preguntar orden de comprobaciones
+			if (request.getResourceParameters().containsKey("uuid")) {
 				String uuid = request.getResourceParameters().get("uuid");
-				if (!request.getResourceName().equals("html") && !request.getResourceName().equals("xml")
-						&& !request.getResourceName().equals("xsd") && !request.getResourceName().equals("xslt")) {
+				if (!goodRequest(request.getResourceName())) {
 					response.setContent("400 Bad Request");
 					response.setStatus(HTTPResponseStatus.S400);
 				} else if ((request.getMethod().equals(HTTPRequestMethod.GET)
@@ -56,20 +58,28 @@ public class ServiceThread implements Runnable {
 				}
 			} else {
 				if (request.getMethod().equals(HTTPRequestMethod.POST)) {
-					// TODO: Pasar el testPostInvalidContent
 
-					// FIXME: El contenido no deberia de leerse asi:
-					String uuid = this.controller.add(request.getContent().substring(5));
-
-					response.setContent("<a href=\"html?uuid=" + uuid + "\">" + uuid + "</a>");
-					response.setStatus(HTTPResponseStatus.S200);
-				} else {
-					String content = "";
-					Map<String, String> allPages = this.controller.getAll();
-					for (Map.Entry<String, String> entry : allPages.entrySet()) {
-						content += "<a href=\\\"html?uuid=" + entry.getKey() + "\\\">" + entry.getKey() + "</a>";
+					String resource = request.getContent().substring(0, request.getContent().indexOf('='));
+					if (goodRequest(resource)) {
+						String uuid = this.controller
+								.add(request.getContent().substring(request.getContent().indexOf('=') + 1));
+						response.setContent("<a href=\"" + resource + "?uuid=" + uuid + "\">" + uuid + "</a>");
+						response.setStatus(HTTPResponseStatus.S200);
+					} else {
+						response.setStatus(HTTPResponseStatus.S400);
 					}
-					response.setContent(content);
+					// TODO: Preguntar si esto se aplica a cualquier metodo que no sea POST
+				} else {
+					Map<String, String> allPages = this.controller.getAll();
+					if (allPages.isEmpty()) {
+						response.setContent("Hybrid Server");
+					} else {
+						String content = "";
+						for (Map.Entry<String, String> entry : allPages.entrySet()) {
+							content += "<a href=\\\"html?uuid=" + entry.getKey() + "\\\">" + entry.getKey() + "</a>";
+						}
+						response.setContent(content);
+					}
 					response.setStatus(HTTPResponseStatus.S200);
 				}
 			}
@@ -91,6 +101,10 @@ public class ServiceThread implements Runnable {
 			e.printStackTrace();
 		}
 
+	}
+
+	private boolean goodRequest(String resource) {
+		return resource.equals("html") || resource.equals("xml") || resource.equals("xsd") || resource.equals("xslt");
 	}
 
 	public void start() {

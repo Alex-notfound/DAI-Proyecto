@@ -34,11 +34,10 @@ public class HybridServer {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		System.out.println(properties.get("numClients"));
 		threadPool = Executors.newFixedThreadPool(Integer.parseInt(properties.getProperty("numClients")));
-
 	}
 
+	// TODO: Falla al instanciar el pool
 	public HybridServer(Map<String, String> pages) {
 		this.controller = new Controller(new MemoryDAO(pages));
 //		threadPool = Executors.newFixedThreadPool((int) properties.get("numClients"));
@@ -47,14 +46,14 @@ public class HybridServer {
 
 	public HybridServer(Properties properties) {
 		this.properties = properties;
-//		threadPool = Executors.newFixedThreadPool(Integer.parseInt(properties.getProperty("numClients")));
-		threadPool = Executors.newFixedThreadPool(1);
+		threadPool = Executors.newFixedThreadPool(Integer.parseInt(properties.getProperty("numClients")));
+//		threadPool = Executors.newFixedThreadPool(1);
 	}
 
 	public int getPort() {
 		return SERVICE_PORT;
 	}
-
+//TODO: Probar en navegador si funciona
 	public void start() {
 		Controller controller = this.controller;
 		this.serverThread = new Thread() {
