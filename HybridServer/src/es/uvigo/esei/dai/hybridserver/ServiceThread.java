@@ -6,12 +6,10 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.Socket;
-import java.util.HashMap;
 import java.util.Map;
 
 import es.uvigo.esei.dai.hybridserver.http.HTTPParseException;
 import es.uvigo.esei.dai.hybridserver.http.HTTPRequest;
-import es.uvigo.esei.dai.hybridserver.http.HTTPRequestMethod;
 import es.uvigo.esei.dai.hybridserver.http.HTTPResponse;
 import es.uvigo.esei.dai.hybridserver.http.HTTPResponseStatus;
 
@@ -20,16 +18,14 @@ public class ServiceThread implements Runnable {
 	private Socket socket;
 	private Controller controller;
 
-	public ServiceThread(Socket clientSocket) {
-		this.socket = clientSocket;
-		this.controller = new Controller(new MemoryDAO(new HashMap<String, String>()));
-	}
-
 	public ServiceThread(Socket clientSocket, Controller controller) {
 		this.socket = clientSocket;
 		this.controller = controller;
 	}
 
+	// TODO: Si es POST o DELETE y envia "/" se muestra pagina Welcome o no?
+	// TODO: Si es es POST o DELETE y envia "/html" se muestra listado?
+	// TODO: Compruebo si contiene la clave uuid en GET y DELETE?
 	@Override
 	public void run() {
 
@@ -39,52 +35,80 @@ public class ServiceThread implements Runnable {
 			reader = new InputStreamReader(socket.getInputStream());
 			HTTPRequest request = new HTTPRequest(reader);
 
-			// TODO: Preguntar orden de comprobaciones
-			if (request.getResourceParameters().containsKey("uuid")) {
-				String uuid = request.getResourceParameters().get("uuid");
-				if (!goodRequest(request.getResourceName())) {
-					response.setContent("400 Bad Request");
-					response.setStatus(HTTPResponseStatus.S400);
-				} else if ((request.getMethod().equals(HTTPRequestMethod.GET)
-						|| request.getMethod().equals(HTTPRequestMethod.DELETE)) && !this.controller.pageFound(uuid)) {
-					response.setContent("404 Not Found");
-					response.setStatus(HTTPResponseStatus.S404);
-				} else {
-					response.setContent(this.controller.get(uuid));
+			switch (request.getMethod()) {
+			case GET:
+				if (request.getResourceChain().equals("/")) {
+					response.setContent("Hybrid Server");
 					response.setStatus(HTTPResponseStatus.S200);
-					if (request.getMethod().equals(HTTPRequestMethod.DELETE)) {
-						this.controller.delete(uuid);
-					}
-				}
-			} else {
-				if (request.getMethod().equals(HTTPRequestMethod.POST)) {
-
-					String resource = request.getContent().substring(0, request.getContent().indexOf('='));
-					if (goodRequest(resource)) {
-						String uuid = this.controller
-								.add(request.getContent().substring(request.getContent().indexOf('=') + 1));
-						response.setContent("<a href=\"" + resource + "?uuid=" + uuid + "\">" + uuid + "</a>");
-						response.setStatus(HTTPResponseStatus.S200);
+				} else if (request.getResourceChain().contentEquals("/html")) {
+					response.setContent(cargarListadoHtml());
+					response.setStatus(HTTPResponseStatus.S200);
+				} else {
+					if (resourceNameValid(request.getResourceName())) {
+						String uuid = request.getResourceParameters().get("uuid");
+						if (this.controller.pageFound(uuid)) {
+							response.setContent(this.controller.get(uuid));
+							response.setStatus(HTTPResponseStatus.S200);
+						} else {
+							response.setContent("404 Not Found");
+							response.setStatus(HTTPResponseStatus.S404);
+						}
 					} else {
+						response.setContent("400 Bad Request");
 						response.setStatus(HTTPResponseStatus.S400);
 					}
-					// TODO: Preguntar si esto se aplica a cualquier metodo que no sea POST
-				} else {
-					Map<String, String> allPages = this.controller.getAll();
-					if (allPages.isEmpty()) {
-						response.setContent("Hybrid Server");
-					} else {
-						String content = "";
-						for (Map.Entry<String, String> entry : allPages.entrySet()) {
-							content += "<a href=\\\"html?uuid=" + entry.getKey() + "\\\">" + entry.getKey() + "</a>";
-						}
-						response.setContent(content);
-					}
-					response.setStatus(HTTPResponseStatus.S200);
 				}
+				break;
+			case POST:
+				// TODO: Sigo sin comprender el problema de resource en el content xxx="content"
+				if (resourceNameValid(request.getResourceName())) {
+					String uuid = this.controller
+							.add(request.getContent().substring(request.getContent().indexOf('=') + 1));
+					response.setContent(
+							"<a href=\"" + request.getResourceName() + "?uuid=" + uuid + "\">" + uuid + "</a>");
+					response.setStatus(HTTPResponseStatus.S200);
+				} else {
+					response.setContent("400 Bad Request");
+					response.setStatus(HTTPResponseStatus.S400);
+				}
+				break;
+			case DELETE:
+				if (resourceNameValid(request.getResourceName())) {
+					String uuid = request.getResourceParameters().get("uuid");
+					if (this.controller.pageFound(uuid)) {
+						this.controller.delete(uuid);
+						response.setContent(this.controller.get(uuid));
+						response.setStatus(HTTPResponseStatus.S200);
+					} else {
+						response.setContent("404 Not Found");
+						response.setStatus(HTTPResponseStatus.S404);
+					}
+				} else {
+					response.setContent("400 Bad Request");
+					response.setStatus(HTTPResponseStatus.S400);
+				}
+				break;
+			default:
+				break;
 			}
 
-		} catch (IOException e) {
+//			} else {
+//				if (request.getMethod().equals(HTTPRequestMethod.POST)) {
+//					// Reemplazar esto por parameters
+//					String resource = request.getContent().substring(0, request.getContent().indexOf('='));
+//					if (resource.equals("html")) {
+//						String uuid = this.controller
+//								.add(request.getContent().substring(request.getContent().indexOf('=') + 1));
+//						response.setContent("<a href=\"" + resource + "?uuid=" + uuid + "\">" + uuid + "</a>");
+//						response.setStatus(HTTPResponseStatus.S200);
+//					} else {
+//						response.setStatus(HTTPResponseStatus.S400);
+//					}
+//			}
+
+		} catch (
+
+		IOException e) {
 			e.printStackTrace();
 		} catch (HTTPParseException e) {
 			e.printStackTrace();
@@ -103,8 +127,20 @@ public class ServiceThread implements Runnable {
 
 	}
 
-	private boolean goodRequest(String resource) {
-		return resource.equals("html") || resource.equals("xml") || resource.equals("xsd") || resource.equals("xslt");
+	private String cargarListadoHtml() {
+		Map<String, String> allPages = this.controller.getAll();
+		if (allPages.isEmpty()) {
+			return "Hybrid Server";
+		}
+		String content = "";
+		for (Map.Entry<String, String> entry : allPages.entrySet()) {
+			content += "<a href=\\\"html?uuid=" + entry.getKey() + "\\\">" + entry.getKey() + "</a>";
+		}
+		return content;
+	}
+
+	private boolean resourceNameValid(String resourceName) {
+		return resourceName.equals("html");
 	}
 
 	public void start() {

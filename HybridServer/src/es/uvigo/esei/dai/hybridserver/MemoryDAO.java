@@ -25,4 +25,12 @@ public class MemoryDAO implements DAO {
 		return randomUuid.toString();
 	}
 
+	public Map<String, String> getAll() {
+		return this.pages;
+	}
+
+	public boolean pageFound(String uuid) {
+		return this.pages.containsKey(uuid);
+	}
+
 }

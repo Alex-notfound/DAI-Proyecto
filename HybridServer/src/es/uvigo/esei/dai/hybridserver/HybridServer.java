@@ -1,11 +1,9 @@
 package es.uvigo.esei.dai.hybridserver;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
@@ -17,43 +15,40 @@ public class HybridServer {
 	private Thread serverThread;
 	private boolean stop;
 
-	private Properties properties = new Properties();
 	private ExecutorService threadPool = Executors.newFixedThreadPool(1);
 	private Controller controller;
 
-//TODO: Preguntar si está bien y si hay que llamar a close()
 	public HybridServer() {
-		try (FileOutputStream fos = new FileOutputStream("config.conf")) {
+//		 properties.put("numClients", 50);
+//		 properties.put("port", 8888);
+//		 properties.put("db.url", "jdbc:mysql:"); // localhost:3306/hstestdb);
+//		 properties.put("db.user", "hsdb");
+//		 properties.put("db.password", "hsdbpass");
 
-			String s = "numClients=50\r\n" + "port=8888\r\n" + "db.url=jdbc:mysql://localhost:3306/hstestdb\r\n"
-					+ "db.user=hsdb\r\n" + "db.password=hsdbpass";
-			fos.write(s.getBytes());
-			properties.load(new FileInputStream("config.conf"));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		threadPool = Executors.newFixedThreadPool(Integer.parseInt(properties.getProperty("numClients")));
+		// Hay que pasar DBDAO
+		this.controller = new Controller(new MemoryDAO(new HashMap<String, String>()));
+		this.threadPool = Executors.newFixedThreadPool(50);
 	}
 
 	// TODO: Falla al instanciar el pool
 	public HybridServer(Map<String, String> pages) {
 		this.controller = new Controller(new MemoryDAO(pages));
-//		threadPool = Executors.newFixedThreadPool((int) properties.get("numClients"));
-//		threadPool.execute(new ServiceThread(socket, this.controller));
+		// threadPool = Executors.newFixedThreadPool((int)
+		// properties.get("numClients"));
+		// threadPool.execute(new ServiceThread(socket, this.controller));
 	}
 
 	public HybridServer(Properties properties) {
-		this.properties = properties;
+		// Hay que pasar DBDAO
+		this.controller = new Controller(new MemoryDAO(new HashMap<String, String>()));
 		threadPool = Executors.newFixedThreadPool(Integer.parseInt(properties.getProperty("numClients")));
-//		threadPool = Executors.newFixedThreadPool(1);
 	}
 
 	public int getPort() {
 		return SERVICE_PORT;
 	}
-//TODO: Probar en navegador si funciona
+
+	// TODO: Probar en navegador si funciona
 	public void start() {
 		Controller controller = this.controller;
 		this.serverThread = new Thread() {
@@ -65,11 +60,7 @@ public class HybridServer {
 						if (stop)
 							break;
 						// Responder al cliente
-						if (controller == null) {
-							threadPool.execute(new ServiceThread(socket));
-						} else {
-							threadPool.execute(new ServiceThread(socket, controller));
-						}
+						threadPool.execute(new ServiceThread(socket, controller));
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -86,7 +77,8 @@ public class HybridServer {
 		this.stop = true;
 
 		try (Socket socket = new Socket("localhost", SERVICE_PORT)) {
-			// Esta conexión se hace, simplemente, para "despertar" el hilo servidor
+			// Esta conexión se hace, simplemente, para "despertar" el hilo
+			// servidor
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

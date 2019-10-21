@@ -4,29 +4,29 @@ import java.util.Map;
 
 public class Controller {
 
-	MemoryDAO memoryDAO;
+	DAO dao;
 
-	public Controller(MemoryDAO memoryDAO) {
-		this.memoryDAO = memoryDAO;
+	public Controller(DAO dao) {
+		this.dao = dao;
 	}
 
 	public String get(String uuid) {
-		return this.memoryDAO.get(uuid);
+		return this.dao.get(uuid);
 	}
 
 	public Map<String, String> getAll() {
-		return this.memoryDAO.pages;
+		return this.dao.getAll();
 	}
 
 	public boolean pageFound(String uuid) {
-		return this.memoryDAO.pages.containsKey(uuid);
+		return this.dao.pageFound(uuid);
 	}
 
 	public void delete(String uuid) {
-		this.memoryDAO.delete(uuid);
+		this.dao.delete(uuid);
 	}
 
 	public String add(String content) {
-		return this.memoryDAO.add(content);
+		return this.dao.add(content);
 	}
 }
