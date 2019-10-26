@@ -112,7 +112,22 @@ public class DBDAO implements DAO {
 
 	@Override
 	public boolean pageFound(String uuid) {
-		// TODO Auto-generated method stub
+		try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+
+			String query = "SELECT * FROM HTML WHERE uuid LIKE ?";
+
+			try (PreparedStatement statement = connection.prepareStatement(query)) {
+				statement.setString(1, uuid);
+				try (ResultSet result = statement.executeQuery()) {
+					if (result.next()) {
+						return true;
+					}
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
 		return false;
 	}
 

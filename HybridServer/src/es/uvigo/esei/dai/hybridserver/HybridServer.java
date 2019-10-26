@@ -10,7 +10,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class HybridServer {
-	private static final int SERVICE_PORT = 8888;
+	private static int SERVICE_PORT = 8888;
 	private Thread serverThread;
 	private boolean stop;
 
@@ -39,6 +39,7 @@ public class HybridServer {
 		// properties.getProperty("db.url"))
 		this.controller = new Controller(new DBDAO(properties.getProperty("db.url"), properties.getProperty("db.user"),
 				properties.getProperty("db.password")));
+		this.SERVICE_PORT = Integer.valueOf(properties.getProperty("port"));
 		threadPool = Executors.newFixedThreadPool(Integer.parseInt(properties.getProperty("numClients")));
 	}
 

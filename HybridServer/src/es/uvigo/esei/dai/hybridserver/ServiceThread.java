@@ -82,7 +82,7 @@ public class ServiceThread implements Runnable {
 						response.setStatus(HTTPResponseStatus.S200);
 					} else {
 						response.setContent("404 Not Found");
-						response.setStatus(HTTPResponseStatus.S404);
+						response.setStatus(HTTPResponseStatus.S200);
 					}
 				} else {
 					response.setContent("400 Bad Request");
