@@ -3,7 +3,6 @@ package es.uvigo.esei.dai.hybridserver;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
@@ -21,12 +20,7 @@ public class HybridServer {
 	public HybridServer() {
 //		 properties.put("numClients", 50);
 //		 properties.put("port", 8888);
-//		 properties.put("db.url", "jdbc:mysql:"); // localhost:3306/hstestdb);
-//		 properties.put("db.user", "hsdb");
-//		 properties.put("db.password", "hsdbpass");
-
-		// Hay que pasar DBDAO
-		this.controller = new Controller(new MemoryDAO(new HashMap<String, String>()));
+		this.controller = new Controller(new DBDAO("jdbc:mysql://localhost:3306/hstestdb", "hsdb", "hsdbpass"));
 		this.threadPool = Executors.newFixedThreadPool(50);
 	}
 
@@ -39,8 +33,12 @@ public class HybridServer {
 	}
 
 	public HybridServer(Properties properties) {
-		// Hay que pasar DBDAO
-		this.controller = new Controller(new MemoryDAO(new HashMap<String, String>()));
+		// JavaDBConnectionConfiguration configuration = new
+		// JavaDBConnectionConfiguration(properties.getProperty("db.url"),
+		// properties.getProperty("db.password"), null,
+		// properties.getProperty("db.url"))
+		this.controller = new Controller(new DBDAO(properties.getProperty("db.url"), properties.getProperty("db.user"),
+				properties.getProperty("db.password")));
 		threadPool = Executors.newFixedThreadPool(Integer.parseInt(properties.getProperty("numClients")));
 	}
 

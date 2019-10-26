@@ -1,16 +1,20 @@
 package es.uvigo.esei.dai.hybridserver;
 
-import java.util.Map;
+import java.util.List;
+
+import es.uvigo.esei.dai.hybridserver.entity.Page;
 
 public interface DAO {
 
-	public String get(String uuid);
+	public void create(Page page);
 
-	public void delete(String uuid);
+//	public void update(Page page);
 
-	public String add(String content);
+	public void delete(Page page);
 
-	public Map<String, String> getAll();
+	public Page get(String uuid);
+
+	public List<Page> list();
 
 	public boolean pageFound(String uuid);
 

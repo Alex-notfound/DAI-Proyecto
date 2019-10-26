@@ -6,8 +6,9 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.Socket;
-import java.util.Map;
+import java.util.List;
 
+import es.uvigo.esei.dai.hybridserver.entity.Page;
 import es.uvigo.esei.dai.hybridserver.http.HTTPParseException;
 import es.uvigo.esei.dai.hybridserver.http.HTTPRequest;
 import es.uvigo.esei.dai.hybridserver.http.HTTPResponse;
@@ -47,7 +48,7 @@ public class ServiceThread implements Runnable {
 					if (resourceNameValid(request.getResourceName())) {
 						String uuid = request.getResourceParameters().get("uuid");
 						if (this.controller.pageFound(uuid)) {
-							response.setContent(this.controller.get(uuid));
+							response.setContent(this.controller.get(uuid).getContent());
 							response.setStatus(HTTPResponseStatus.S200);
 						} else {
 							response.setContent("404 Not Found");
@@ -76,8 +77,8 @@ public class ServiceThread implements Runnable {
 				if (resourceNameValid(request.getResourceName())) {
 					String uuid = request.getResourceParameters().get("uuid");
 					if (this.controller.pageFound(uuid)) {
+						response.setContent(this.controller.get(uuid).getContent());
 						this.controller.delete(uuid);
-						response.setContent(this.controller.get(uuid));
 						response.setStatus(HTTPResponseStatus.S200);
 					} else {
 						response.setContent("404 Not Found");
@@ -128,13 +129,13 @@ public class ServiceThread implements Runnable {
 	}
 
 	private String cargarListadoHtml() {
-		Map<String, String> allPages = this.controller.getAll();
+		List<Page> allPages = this.controller.list();
 		if (allPages.isEmpty()) {
 			return "Hybrid Server";
 		}
 		String content = "";
-		for (Map.Entry<String, String> entry : allPages.entrySet()) {
-			content += "<a href=\\\"html?uuid=" + entry.getKey() + "\\\">" + entry.getKey() + "</a>";
+		for (Page page : allPages) {
+			content += "<a href=\\\"html?uuid=" + page.getUuid() + "\\\">" + page.getUuid() + "</a>";
 		}
 		return content;
 	}

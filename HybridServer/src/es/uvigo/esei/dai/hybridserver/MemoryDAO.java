@@ -1,7 +1,10 @@
 package es.uvigo.esei.dai.hybridserver;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+
+import es.uvigo.esei.dai.hybridserver.entity.Page;
 
 public class MemoryDAO implements DAO {
 
@@ -11,22 +14,36 @@ public class MemoryDAO implements DAO {
 		this.pages = pages;
 	}
 
-	public String get(String uuid) {
-		return this.pages.get(uuid);
+	public void create(Page page) {
+		this.pages.put(page.getUuid(), page.getContent());
 	}
 
-	public void delete(String uuid) {
-		this.pages.remove(uuid);
+	public void delete(Page page) {
+		this.pages.remove(page.getUuid());
 	}
 
-	public String add(String content) {
-		UUID randomUuid = UUID.randomUUID();
-		this.pages.put(randomUuid.toString(), content);
-		return randomUuid.toString();
+	public Page get(String uuid) {
+		if (this.pages.containsKey(uuid)) {
+			return new Page(uuid, this.pages.get(uuid));
+		} else {
+//			throw new PageNotFoundException(uuid);
+			throw new RuntimeException();
+		}
 	}
 
-	public Map<String, String> getAll() {
-		return this.pages;
+//	public void update(Page page) {
+//		if (this.pages.containsKey(page.getUuid())) {
+//			this.pages.put(page.getUuid(), page.getContent());
+//		}
+//	}
+
+	public List<Page> list() {
+		List<Page> list = new ArrayList<>();
+		for (Map.Entry<String, String> entry : this.pages.entrySet()) {
+			Page page = new Page(entry.getKey(), entry.getValue());
+			list.add(page);
+		}
+		return list;
 	}
 
 	public boolean pageFound(String uuid) {
