@@ -16,7 +16,6 @@ public class Launcher {
 		} else {
 			HybridServer server = null;
 			if (args.length == 1) {
-				// TODO: Instanciar properties
 				try (FileInputStream fis = new FileInputStream(new File(args[0]))) {
 					Properties properties = new Properties();
 					properties.load(fis);

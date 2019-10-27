@@ -12,19 +12,20 @@ import es.uvigo.esei.dai.hybridserver.entity.Page;
 
 public class DBDAO implements DAO {
 
-	private static String DB_URL = null;
-	private static String DB_USER = null;
-	private static String DB_PASSWORD = null;
+	//TODO: Declaracion atributos esta bien?
+	private String db_url = null;
+	private String db_user = null;
+	private String db_password = null;
 
 	public DBDAO(String url, String user, String pass) {
-		this.DB_URL = url;
-		this.DB_USER = user;
-		this.DB_PASSWORD = pass;
+		this.db_url = url;
+		this.db_user = user;
+		this.db_password = pass;
 	}
-
+//TODO: Preguntar sobre override .. Es necesario? 
 	@Override
 	public void create(Page page) {
-		try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+		try (Connection connection = DriverManager.getConnection(db_url, db_user, db_password)) {
 
 			String query = "INSERT INTO HTML (uuid, content) VALUES (?, ?)";
 
@@ -44,8 +45,7 @@ public class DBDAO implements DAO {
 
 	@Override
 	public void delete(Page page) {
-		try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-			// TODO Auto-generated method stub
+		try (Connection connection = DriverManager.getConnection(db_url, db_user, db_password)) {
 			String query = "DELETE FROM HTML WHERE uuid LIKE ?";
 			try (PreparedStatement statement = connection.prepareStatement(query)) {
 				statement.setString(1, page.getUuid());
@@ -62,7 +62,7 @@ public class DBDAO implements DAO {
 
 	@Override
 	public Page get(String uuid) {
-		try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+		try (Connection connection = DriverManager.getConnection(db_url, db_user, db_password)) {
 
 			String query = "SELECT * FROM HTML WHERE uuid LIKE ?";
 
@@ -86,7 +86,7 @@ public class DBDAO implements DAO {
 
 	@Override
 	public List<Page> list() {
-		try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+		try (Connection connection = DriverManager.getConnection(db_url, db_user, db_password)) {
 
 			String query = "SELECT * FROM HTML";
 
@@ -112,7 +112,7 @@ public class DBDAO implements DAO {
 
 	@Override
 	public boolean pageFound(String uuid) {
-		try (Connection connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+		try (Connection connection = DriverManager.getConnection(db_url, db_user, db_password)) {
 
 			String query = "SELECT * FROM HTML WHERE uuid LIKE ?";
 

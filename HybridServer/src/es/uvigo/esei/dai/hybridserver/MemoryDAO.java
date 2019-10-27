@@ -31,12 +31,6 @@ public class MemoryDAO implements DAO {
 		}
 	}
 
-//	public void update(Page page) {
-//		if (this.pages.containsKey(page.getUuid())) {
-//			this.pages.put(page.getUuid(), page.getContent());
-//		}
-//	}
-
 	public List<Page> list() {
 		List<Page> list = new ArrayList<>();
 		for (Map.Entry<String, String> entry : this.pages.entrySet()) {

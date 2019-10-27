@@ -38,6 +38,8 @@ public class ServiceThread implements Runnable {
 
 			switch (request.getMethod()) {
 			case GET:
+				//TODO: el resource chain es favicon.ico y entra mal en navegador
+				System.out.println("Recurso" + request.getResourceChain());
 				if (request.getResourceChain().equals("/")) {
 					response.setContent("Hybrid Server");
 					response.setStatus(HTTPResponseStatus.S200);
@@ -48,6 +50,7 @@ public class ServiceThread implements Runnable {
 					if (resourceNameValid(request.getResourceName())) {
 						String uuid = request.getResourceParameters().get("uuid");
 						if (this.controller.pageFound(uuid)) {
+							System.out.println("Page found: ");
 							response.setContent(this.controller.get(uuid).getContent());
 							response.setStatus(HTTPResponseStatus.S200);
 						} else {
@@ -55,6 +58,7 @@ public class ServiceThread implements Runnable {
 							response.setStatus(HTTPResponseStatus.S404);
 						}
 					} else {
+						System.out.println("Entra mal");
 						response.setContent("400 Bad Request");
 						response.setStatus(HTTPResponseStatus.S400);
 					}
@@ -66,7 +70,7 @@ public class ServiceThread implements Runnable {
 					String uuid = this.controller
 							.add(request.getContent().substring(request.getContent().indexOf('=') + 1));
 					response.setContent(
-							"<a href=\"" + request.getResourceName() + "?uuid=" + uuid + "\">" + uuid + "</a>");
+							"<a href=\"" + request.getResourceName() + "?uuid=" + uuid + "\">" + uuid + "</a>\n");
 					response.setStatus(HTTPResponseStatus.S200);
 				} else {
 					response.setContent("400 Bad Request");
@@ -93,7 +97,6 @@ public class ServiceThread implements Runnable {
 				break;
 			}
 
-//			} else {
 //				if (request.getMethod().equals(HTTPRequestMethod.POST)) {
 //					// Reemplazar esto por parameters
 //					String resource = request.getContent().substring(0, request.getContent().indexOf('='));
@@ -105,11 +108,8 @@ public class ServiceThread implements Runnable {
 //					} else {
 //						response.setStatus(HTTPResponseStatus.S400);
 //					}
-//			}
 
-		} catch (
-
-		IOException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (HTTPParseException e) {
 			e.printStackTrace();

@@ -8,8 +8,6 @@ public interface DAO {
 
 	public void create(Page page);
 
-//	public void update(Page page);
-
 	public void delete(Page page);
 
 	public Page get(String uuid);

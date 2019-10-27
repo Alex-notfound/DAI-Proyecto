@@ -10,7 +10,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class HybridServer {
-	private static int SERVICE_PORT = 8888;
+
+	private int SERVICE_PORT = 8888;
 	private Thread serverThread;
 	private boolean stop;
 
@@ -18,13 +19,11 @@ public class HybridServer {
 	private Controller controller;
 
 	public HybridServer() {
-//		 properties.put("numClients", 50);
-//		 properties.put("port", 8888);
 		this.controller = new Controller(new DBDAO("jdbc:mysql://localhost:3306/hstestdb", "hsdb", "hsdbpass"));
 		this.threadPool = Executors.newFixedThreadPool(50);
 	}
 
-	// TODO: Falla al instanciar el pool
+	// TODO: Properties por defecto?
 	public HybridServer(Map<String, String> pages) {
 		this.controller = new Controller(new MemoryDAO(pages));
 		// threadPool = Executors.newFixedThreadPool((int)
@@ -33,12 +32,9 @@ public class HybridServer {
 	}
 
 	public HybridServer(Properties properties) {
-		// JavaDBConnectionConfiguration configuration = new
-		// JavaDBConnectionConfiguration(properties.getProperty("db.url"),
-		// properties.getProperty("db.password"), null,
-		// properties.getProperty("db.url"))
 		this.controller = new Controller(new DBDAO(properties.getProperty("db.url"), properties.getProperty("db.user"),
 				properties.getProperty("db.password")));
+		// TODO: Esta bien? Porque como era static...
 		this.SERVICE_PORT = Integer.valueOf(properties.getProperty("port"));
 		threadPool = Executors.newFixedThreadPool(Integer.parseInt(properties.getProperty("numClients")));
 	}
@@ -47,7 +43,6 @@ public class HybridServer {
 		return SERVICE_PORT;
 	}
 
-	// TODO: Probar en navegador si funciona
 	public void start() {
 		Controller controller = this.controller;
 		this.serverThread = new Thread() {
@@ -58,7 +53,6 @@ public class HybridServer {
 						Socket socket = serverSocket.accept();
 						if (stop)
 							break;
-						// Responder al cliente
 						threadPool.execute(new ServiceThread(socket, controller));
 					}
 				} catch (IOException e) {
