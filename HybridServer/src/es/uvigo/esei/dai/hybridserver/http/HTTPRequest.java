@@ -23,53 +23,55 @@ public class HTTPRequest {
 
 		BufferedReader bufferedReader = new BufferedReader(reader);
 		String s = bufferedReader.readLine();
-		String[] firstLine = s.split(" ");
-		if (firstLine.length != 3) {
-			throw new HTTPParseException();
-		}
-		this.method = HTTPRequestMethod.valueOf(firstLine[0]);
-		this.resourceChain = firstLine[1];
-		this.httpVersion = firstLine[2];
-
-		String[] nameAndParameters = firstLine[1].split("\\?");
-		this.resourceName = nameAndParameters[0].substring(1);
-		if (!this.resourceName.isEmpty()) {
-			this.resourcePath = this.resourceName.split("/");
-		}
-
-		if (nameAndParameters.length > 1) {
-			String[] parameters = nameAndParameters[1].split("&");
-			String[] keyAndValue;
-			for (int i = 0; i < parameters.length; i++) {
-				keyAndValue = parameters[i].split("=");
-				resourceParameters.put(keyAndValue[0], keyAndValue[1]);
-			}
-		}
-
-		while (!(s = bufferedReader.readLine()).isEmpty() && s != null) {
-			String[] values = s.split(": ");
-			if (values.length != 2) {
+		if (s != null) {
+			String[] firstLine = s.split(" ");
+			if (firstLine.length != 3) {
 				throw new HTTPParseException();
 			}
-			headerParameters.put(values[0], values[1]);
-		}
+			this.method = HTTPRequestMethod.valueOf(firstLine[0]);
+			this.resourceChain = firstLine[1];
+			this.httpVersion = firstLine[2];
 
-		if (headerParameters.containsKey("Content-Length")) {
-			contentLength = Integer.parseInt(headerParameters.get("Content-Length"));
-		}
+			String[] nameAndParameters = firstLine[1].split("\\?");
+			this.resourceName = nameAndParameters[0].substring(1);
+			if (!this.resourceName.isEmpty()) {
+				this.resourcePath = this.resourceName.split("/");
+			}
 
-		char[] buffer = new char[contentLength];
-		bufferedReader.read(buffer);
-		for (int i = 0; i < buffer.length; i++) {
-			this.content = java.net.URLDecoder.decode(String.valueOf(buffer), "UTF-8");
-		}
+			if (nameAndParameters.length > 1) {
+				String[] parameters = nameAndParameters[1].split("&");
+				String[] keyAndValue;
+				for (int i = 0; i < parameters.length; i++) {
+					keyAndValue = parameters[i].split("=");
+					resourceParameters.put(keyAndValue[0], keyAndValue[1]);
+				}
+			}
 
-		if (this.method.equals(HTTPRequestMethod.POST)) {
-			String[] parameters = content.split("&");
-			String[] keyAndValue;
-			for (int i = 0; i < parameters.length; i++) {
-				keyAndValue = parameters[i].split("=");
-				resourceParameters.put(keyAndValue[0], keyAndValue[1]);
+			while (!(s = bufferedReader.readLine()).isEmpty() && s != null) {
+				String[] values = s.split(": ");
+				if (values.length != 2) {
+					throw new HTTPParseException();
+				}
+				headerParameters.put(values[0], values[1]);
+			}
+
+			if (headerParameters.containsKey("Content-Length")) {
+				contentLength = Integer.parseInt(headerParameters.get("Content-Length"));
+			}
+
+			char[] buffer = new char[contentLength];
+			bufferedReader.read(buffer);
+			for (int i = 0; i < buffer.length; i++) {
+				this.content = java.net.URLDecoder.decode(String.valueOf(buffer), "UTF-8");
+			}
+
+			if (contentLength > 0) {
+				String[] parameters = content.split("&");
+				String[] keyAndValue;
+				for (int i = 0; i < parameters.length; i++) {
+					keyAndValue = parameters[i].split("=");
+					resourceParameters.put(keyAndValue[0], keyAndValue[1]);
+				}
 			}
 		}
 	}

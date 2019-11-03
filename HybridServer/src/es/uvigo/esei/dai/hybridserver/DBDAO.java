@@ -12,7 +12,6 @@ import es.uvigo.esei.dai.hybridserver.entity.Page;
 
 public class DBDAO implements DAO {
 
-	//TODO: Declaracion atributos esta bien?
 	private String db_url = null;
 	private String db_user = null;
 	private String db_password = null;
@@ -22,9 +21,9 @@ public class DBDAO implements DAO {
 		this.db_user = user;
 		this.db_password = pass;
 	}
-//TODO: Preguntar sobre override .. Es necesario? 
+
 	@Override
-	public void create(Page page) {
+	public void create(Page page) throws SQLException {
 		try (Connection connection = DriverManager.getConnection(db_url, db_user, db_password)) {
 
 			String query = "INSERT INTO HTML (uuid, content) VALUES (?, ?)";
@@ -37,14 +36,11 @@ public class DBDAO implements DAO {
 					throw new RuntimeException("Error en la inserción de página");
 				}
 			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
 		}
 	}
 
 	@Override
-	public void delete(Page page) {
+	public void delete(Page page) throws SQLException {
 		try (Connection connection = DriverManager.getConnection(db_url, db_user, db_password)) {
 			String query = "DELETE FROM HTML WHERE uuid LIKE ?";
 			try (PreparedStatement statement = connection.prepareStatement(query)) {
@@ -54,14 +50,11 @@ public class DBDAO implements DAO {
 					throw new RuntimeException("Error en la eliminacion de página");
 				}
 			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
 		}
 	}
 
 	@Override
-	public Page get(String uuid) {
+	public Page get(String uuid) throws SQLException {
 		try (Connection connection = DriverManager.getConnection(db_url, db_user, db_password)) {
 
 			String query = "SELECT * FROM HTML WHERE uuid LIKE ?";
@@ -73,19 +66,16 @@ public class DBDAO implements DAO {
 					if (result.next()) {
 						return convertResultIntoPage(result);
 					} else {
-//					throw new PageNotFoundException(uuid);
+						System.err.println("Page not found");
 						throw new RuntimeException();
 					}
 				}
 			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
 		}
 	}
 
 	@Override
-	public List<Page> list() {
+	public List<Page> list() throws SQLException {
 		try (Connection connection = DriverManager.getConnection(db_url, db_user, db_password)) {
 
 			String query = "SELECT * FROM HTML";
@@ -100,9 +90,6 @@ public class DBDAO implements DAO {
 					return pages;
 				}
 			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
 		}
 	}
 
@@ -111,7 +98,7 @@ public class DBDAO implements DAO {
 	}
 
 	@Override
-	public boolean pageFound(String uuid) {
+	public boolean pageFound(String uuid) throws SQLException {
 		try (Connection connection = DriverManager.getConnection(db_url, db_user, db_password)) {
 
 			String query = "SELECT * FROM HTML WHERE uuid LIKE ?";
@@ -124,9 +111,6 @@ public class DBDAO implements DAO {
 					}
 				}
 			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
 		}
 		return false;
 	}

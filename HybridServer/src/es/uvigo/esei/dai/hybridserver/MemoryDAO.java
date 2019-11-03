@@ -14,23 +14,26 @@ public class MemoryDAO implements DAO {
 		this.pages = pages;
 	}
 
+	@Override
 	public void create(Page page) {
 		this.pages.put(page.getUuid(), page.getContent());
 	}
 
+	@Override
 	public void delete(Page page) {
 		this.pages.remove(page.getUuid());
 	}
 
+	@Override
 	public Page get(String uuid) {
 		if (this.pages.containsKey(uuid)) {
 			return new Page(uuid, this.pages.get(uuid));
 		} else {
-//			throw new PageNotFoundException(uuid);
-			throw new RuntimeException();
+			return null;
 		}
 	}
 
+	@Override
 	public List<Page> list() {
 		List<Page> list = new ArrayList<>();
 		for (Map.Entry<String, String> entry : this.pages.entrySet()) {
@@ -40,6 +43,7 @@ public class MemoryDAO implements DAO {
 		return list;
 	}
 
+	@Override
 	public boolean pageFound(String uuid) {
 		return this.pages.containsKey(uuid);
 	}

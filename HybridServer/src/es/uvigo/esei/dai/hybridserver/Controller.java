@@ -1,5 +1,6 @@
 package es.uvigo.esei.dai.hybridserver;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
@@ -13,24 +14,23 @@ public class Controller {
 		this.dao = dao;
 	}
 
-	public Page get(String uuid) {
+	public Page get(String uuid) throws SQLException {
 		return this.dao.get(uuid);
 	}
 
-	public List<Page> list() {
+	public List<Page> list() throws SQLException {
 		return this.dao.list();
 	}
 
-	public boolean pageFound(String uuid) {
+	public boolean pageFound(String uuid) throws SQLException {
 		return this.dao.pageFound(uuid);
 	}
 
-	public void delete(String uuid) {
+	public void delete(String uuid) throws SQLException {
 		this.dao.delete(new Page(uuid));
 	}
 
-	public String add(String content) {
-		// TODO: Preguntar si es correcto generar UUID aqui
+	public String add(String content) throws SQLException {
 		String uuid = UUID.randomUUID().toString();
 		this.dao.create(new Page(uuid, content));
 		return uuid;

@@ -11,36 +11,33 @@ import java.util.concurrent.TimeUnit;
 
 public class HybridServer {
 
-	private int SERVICE_PORT = 8888;
-	private Thread serverThread;
+	private int port;
 	private boolean stop;
-
-	private ExecutorService threadPool = Executors.newFixedThreadPool(1);
+	private Thread serverThread;
+	private ExecutorService threadPool;
 	private Controller controller;
 
 	public HybridServer() {
 		this.controller = new Controller(new DBDAO("jdbc:mysql://localhost:3306/hstestdb", "hsdb", "hsdbpass"));
+		this.port = 8888;
 		this.threadPool = Executors.newFixedThreadPool(50);
 	}
 
-	// TODO: Properties por defecto?
 	public HybridServer(Map<String, String> pages) {
 		this.controller = new Controller(new MemoryDAO(pages));
-		// threadPool = Executors.newFixedThreadPool((int)
-		// properties.get("numClients"));
-		// threadPool.execute(new ServiceThread(socket, this.controller));
+		this.port = 8888;
+		this.threadPool = Executors.newFixedThreadPool(50);
 	}
 
 	public HybridServer(Properties properties) {
 		this.controller = new Controller(new DBDAO(properties.getProperty("db.url"), properties.getProperty("db.user"),
 				properties.getProperty("db.password")));
-		// TODO: Esta bien? Porque como era static...
-		this.SERVICE_PORT = Integer.valueOf(properties.getProperty("port"));
+		this.port = Integer.valueOf(properties.getProperty("port"));
 		threadPool = Executors.newFixedThreadPool(Integer.parseInt(properties.getProperty("numClients")));
 	}
 
 	public int getPort() {
-		return SERVICE_PORT;
+		return port;
 	}
 
 	public void start() {
@@ -48,7 +45,7 @@ public class HybridServer {
 		this.serverThread = new Thread() {
 			@Override
 			public void run() {
-				try (final ServerSocket serverSocket = new ServerSocket(SERVICE_PORT)) {
+				try (final ServerSocket serverSocket = new ServerSocket(port)) {
 					while (true) {
 						Socket socket = serverSocket.accept();
 						if (stop)
@@ -69,7 +66,7 @@ public class HybridServer {
 	public void stop() {
 		this.stop = true;
 
-		try (Socket socket = new Socket("localhost", SERVICE_PORT)) {
+		try (Socket socket = new Socket("localhost", port)) {
 			// Esta conexión se hace, simplemente, para "despertar" el hilo
 			// servidor
 		} catch (IOException e) {
