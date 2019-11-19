@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
+import es.uvigo.esei.dai.hybridserver.dao.DAO;
 import es.uvigo.esei.dai.hybridserver.entity.Page;
 
 public class Controller {

@@ -9,6 +9,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import es.uvigo.esei.dai.hybridserver.dao.DBDAO;
+import es.uvigo.esei.dai.hybridserver.dao.MemoryDAO;
+
 public class HybridServer {
 
 	private int port;
