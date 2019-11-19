@@ -33,7 +33,7 @@ public class ServiceThread implements Runnable {
 		try {
 			reader = new InputStreamReader(socket.getInputStream());
 			HTTPRequest request = new HTTPRequest(reader);
-
+			response.putParameter("Content-Type", "text/html");
 			switch (request.getMethod()) {
 			case GET:
 				if (request.getResourceChain().equals("/")) {
@@ -104,14 +104,14 @@ public class ServiceThread implements Runnable {
 			response.setStatus(HTTPResponseStatus.S500);
 		}
 		response.setVersion("HTTP/1.1");
-		response.putParameter("Content-Type", "text/html");
 
 		try (Writer writer = new OutputStreamWriter(socket.getOutputStream())) {
 			response.print(writer);
+			// TODO: Preguntar si cerrar socketCliente aqui es correcto
+			this.socket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	private String cargarListadoHtml() throws SQLException {
