@@ -115,4 +115,10 @@ public class XSDDAO implements DAO {
 		return false;
 	}
 
+	@Override
+	public boolean xsdFound(String xsd) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

@@ -4,6 +4,7 @@ public class Page {
 
 	private String uuid;
 	private String content;
+	private String xsd;
 
 	public Page() {
 	}
@@ -15,6 +16,12 @@ public class Page {
 	public Page(String uuid, String content) {
 		this.uuid = uuid;
 		this.content = content;
+	}
+
+	public Page(String uuid, String content, String xsd) {
+		this.uuid = uuid;
+		this.content = content;
+		this.xsd = xsd;
 	}
 
 	public String getUuid() {
@@ -31,6 +38,14 @@ public class Page {
 
 	public void setContent(String content) {
 		this.content = content;
+	}
+
+	public String getXsd() {
+		return xsd;
+	}
+
+	public void setXsd(String xsd) {
+		this.xsd = xsd;
 	}
 
 	public String toString() {

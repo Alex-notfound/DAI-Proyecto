@@ -26,11 +26,12 @@ public class XSLTDAO implements DAO {
 	public void create(Page page) throws SQLException {
 		try (Connection connection = DriverManager.getConnection(db_url, db_user, db_password)) {
 
-			String query = "INSERT INTO XSLT (uuid, content) VALUES (?, ?)";
+			String query = "INSERT INTO XSLT (uuid, content, xsd) VALUES (?, ?, ?)";
 
 			try (PreparedStatement statement = connection.prepareStatement(query)) {
 				statement.setString(1, page.getUuid());
 				statement.setString(2, page.getContent());
+				statement.setString(3, page.getXsd());
 
 				if (statement.executeUpdate() != 1) {
 					throw new RuntimeException("Error en la inserción de página");
@@ -100,11 +101,27 @@ public class XSLTDAO implements DAO {
 	@Override
 	public boolean pageFound(String uuid) throws SQLException {
 		try (Connection connection = DriverManager.getConnection(db_url, db_user, db_password)) {
-
 			String query = "SELECT * FROM XSLT WHERE uuid LIKE ?";
 
 			try (PreparedStatement statement = connection.prepareStatement(query)) {
 				statement.setString(1, uuid);
+				try (ResultSet result = statement.executeQuery()) {
+					if (result.next()) {
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public boolean xsdFound(String xsd) throws SQLException {
+		try (Connection connection = DriverManager.getConnection(db_url, db_user, db_password)) {
+			String query = "SELECT * FROM XSD WHERE uuid LIKE ?";
+
+			try (PreparedStatement statement = connection.prepareStatement(query)) {
+				statement.setString(1, xsd);
 				try (ResultSet result = statement.executeQuery()) {
 					if (result.next()) {
 						return true;

@@ -48,4 +48,10 @@ public class MemoryDAO implements DAO {
 		return this.pages.containsKey(uuid);
 	}
 
+	@Override
+	public boolean xsdFound(String xsd) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

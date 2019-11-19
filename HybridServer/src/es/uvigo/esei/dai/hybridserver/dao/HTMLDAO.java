@@ -115,4 +115,10 @@ public class HTMLDAO implements DAO {
 		return false;
 	}
 
+	@Override
+	public boolean xsdFound(String xsd) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }
