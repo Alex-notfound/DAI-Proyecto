@@ -48,9 +48,9 @@ public class HybridServer {
 				try (final ServerSocket serverSocket = new ServerSocket(port)) {
 					while (true) {
 						Socket socket = serverSocket.accept();
-						if (stop)
-							break;
-						threadPool.execute(new ServiceThread(socket, controller));
+							if (stop)
+								break;
+							threadPool.execute(new ServiceThread(socket, controller));
 					}
 				} catch (IOException e) {
 					e.printStackTrace();

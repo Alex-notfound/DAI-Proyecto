@@ -37,7 +37,7 @@ public class ServiceThread implements Runnable {
 			switch (request.getMethod()) {
 			case GET:
 				if (request.getResourceChain().equals("/")) {
-					response.setContent("Hybrid Server");
+					response.setContent("Hybrid Server\n\nAlexandre Currás Rodríguez");
 					response.setStatus(HTTPResponseStatus.S200);
 				} else if (request.getResourceChain().contentEquals("/html")) {
 					response.setContent(cargarListadoHtml());
@@ -104,6 +104,7 @@ public class ServiceThread implements Runnable {
 			response.setStatus(HTTPResponseStatus.S500);
 		}
 		response.setVersion("HTTP/1.1");
+		response.putParameter("Content-Type", "text/html");
 
 		try (Writer writer = new OutputStreamWriter(socket.getOutputStream())) {
 			response.print(writer);
@@ -118,10 +119,12 @@ public class ServiceThread implements Runnable {
 		if (allPages.isEmpty()) {
 			return "Hybrid Server";
 		}
-		String content = "";
+		// TODO: Preguntar si así está OK la pagina HTML
+		String content = "<html><head></head><body>";
 		for (Page page : allPages) {
 			content += "<p><a href=\\html?uuid=" + page.getUuid() + ">" + page.getUuid() + "</a></p>";
 		}
+		content += "</body></html>";
 		return content;
 	}
 
