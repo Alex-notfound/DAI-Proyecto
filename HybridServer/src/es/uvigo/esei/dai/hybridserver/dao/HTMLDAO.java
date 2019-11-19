@@ -10,13 +10,13 @@ import java.util.List;
 
 import es.uvigo.esei.dai.hybridserver.entity.Page;
 
-public class DBDAO implements DAO {
+public class HTMLDAO implements DAO {
 
 	private String db_url = null;
 	private String db_user = null;
 	private String db_password = null;
 
-	public DBDAO(String url, String user, String pass) {
+	public HTMLDAO(String url, String user, String pass) {
 		this.db_url = url;
 		this.db_user = user;
 		this.db_password = pass;

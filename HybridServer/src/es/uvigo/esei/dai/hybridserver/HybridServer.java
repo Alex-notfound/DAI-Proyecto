@@ -9,7 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import es.uvigo.esei.dai.hybridserver.dao.DBDAO;
+import es.uvigo.esei.dai.hybridserver.dao.HTMLDAO;
 import es.uvigo.esei.dai.hybridserver.dao.MemoryDAO;
 
 public class HybridServer {
@@ -21,7 +21,7 @@ public class HybridServer {
 	private Controller controller;
 
 	public HybridServer() {
-		this.controller = new Controller(new DBDAO("jdbc:mysql://localhost:3306/hstestdb", "hsdb", "hsdbpass"));
+		this.controller = new Controller(new HTMLDAO("jdbc:mysql://localhost:3306/hstestdb", "hsdb", "hsdbpass"));
 		this.port = 8888;
 		this.threadPool = Executors.newFixedThreadPool(50);
 	}
@@ -33,7 +33,7 @@ public class HybridServer {
 	}
 
 	public HybridServer(Properties properties) {
-		this.controller = new Controller(new DBDAO(properties.getProperty("db.url"), properties.getProperty("db.user"),
+		this.controller = new Controller(new HTMLDAO(properties.getProperty("db.url"), properties.getProperty("db.user"),
 				properties.getProperty("db.password")));
 		this.port = Integer.valueOf(properties.getProperty("port"));
 		threadPool = Executors.newFixedThreadPool(Integer.parseInt(properties.getProperty("numClients")));
