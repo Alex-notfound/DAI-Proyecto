@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://www.example.org/configurationSchema"
+	xmlns:tns="http://www.example.org/configurationSchema"
+	elementFormDefault="qualified">
+
+	<element name="configuration">
+		<complexType>
+			<sequence>
+				<element name="connections"></element>
+				<element name="database">
+				</element>
+				<element name="servers"></element>
+			</sequence>
+		</complexType>
+	</element>
+
+	<complexType name="database">
+		<sequence>
+			<element name="user"></element>
+			<element name="password"></element>
+			<element name="url"></element>
+		</sequence>
+	</complexType>
+
+	<complexType name="connections">
+		<sequence>
+			<element name="http"></element>
+			<element name="webservice"></element>
+			<element name="numClients"></element>
+		</sequence>
+	</complexType>
+
+	<complexType name="servers">
+		<sequence>
+			<element name="server"></element>
+		</sequence>
+	</complexType>
+</schema>
