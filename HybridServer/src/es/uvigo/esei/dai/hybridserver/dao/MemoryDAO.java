@@ -50,7 +50,6 @@ public class MemoryDAO implements DAO {
 
 	@Override
 	public boolean xsdFound(String xsd) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 

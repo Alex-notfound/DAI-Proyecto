@@ -137,7 +137,6 @@ public class ServiceThread implements Runnable {
 		if (allPages.isEmpty()) {
 			return "Hybrid Server";
 		}
-		// TODO: Preguntar si así está OK la pagina HTML
 		String content = "<html><head></head><body>";
 		for (Page page : allPages) {
 			content += "<p><a href=\\html?uuid=" + page.getUuid() + ">" + page.getUuid() + "</a></p>";
