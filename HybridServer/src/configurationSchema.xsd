@@ -4,36 +4,44 @@
 	xmlns:tns="http://www.example.org/configurationSchema"
 	elementFormDefault="qualified">
 
-	<element name="configuration">
-		<complexType>
-			<sequence>
-				<element name="connections"></element>
-				<element name="database">
-				</element>
-				<element name="servers"></element>
-			</sequence>
-		</complexType>
-	</element>
+	<!-- Confirmar tipos de datos, numero de ocurrencias, etc -->
+	<element name="configuration" type="tns:configuration"></element>
 
-	<complexType name="database">
-		<sequence>
-			<element name="user"></element>
-			<element name="password"></element>
-			<element name="url"></element>
-		</sequence>
+	<complexType name="configuration">
+		<all>
+			<element name="connections" type="tns:connections"></element>
+			<element name="database" type="tns:database"></element>
+			<element name="servers" type="tns:servers"></element>
+		</all>
 	</complexType>
 
 	<complexType name="connections">
-		<sequence>
-			<element name="http"></element>
-			<element name="webservice"></element>
-			<element name="numClients"></element>
-		</sequence>
+		<all>
+			<element name="http" type="string"></element>
+			<element name="webservice" type="anyURI"></element>
+			<element name="numClients" type="positiveInteger"></element>
+		</all>
+	</complexType>
+
+	<complexType name="database">
+		<all>
+			<element name="user" type="string"></element>
+			<element name="password" type="string"></element>
+			<element name="url" type="anyURI"></element>
+		</all>
 	</complexType>
 
 	<complexType name="servers">
 		<sequence>
-			<element name="server"></element>
+			<element name="server" type="tns:server"></element>
 		</sequence>
+	</complexType>
+
+	<complexType name="server">
+		<attribute name="name" type="string" use="required"></attribute>
+		<attribute name="wsdl" type="anyURI" use="required"></attribute>
+		<attribute name="namespace" type="anyURI" use="required"></attribute>
+		<attribute name="service" type="string" use="required"></attribute>
+		<attribute name="httpAddress" type="anyURI" use="required"></attribute>
 	</complexType>
 </schema>
