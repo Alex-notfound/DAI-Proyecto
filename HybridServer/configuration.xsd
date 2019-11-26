@@ -17,7 +17,7 @@
 
 	<complexType name="connections">
 		<all>
-			<element name="http" type="string"></element>
+			<element name="http" type="positiveInteger"></element>
 			<element name="webservice" type="anyURI"></element>
 			<element name="numClients" type="positiveInteger"></element>
 		</all>
@@ -33,7 +33,8 @@
 
 	<complexType name="servers">
 		<sequence>
-			<element name="server" type="tns:server"></element>
+			<element name="server" type="tns:server"
+				maxOccurs="unbounded"></element>
 		</sequence>
 	</complexType>
 
