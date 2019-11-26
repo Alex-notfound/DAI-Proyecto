@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schema xmlns="http://www.w3.org/2001/XMLSchema"
-	targetNamespace="http://www.example.org/configurationSchema"
-	xmlns:tns="http://www.example.org/configurationSchema"
+	targetNamespace="http://www.esei.uvigo.es/dai/hybridserver"
+	xmlns:tns="http://www.esei.uvigo.es/dai/hybridserver"
 	elementFormDefault="qualified">
 
 	<!-- Confirmar tipos de datos, numero de ocurrencias, etc -->
