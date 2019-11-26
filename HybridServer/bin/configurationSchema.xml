@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tns:configuration xmlns:tns="http://www.example.org/configurationSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.example.org/configurationSchema configurationSchema.xsd ">
+  <tns:connections>
+    <tns:http>tns:http</tns:http>
+    <tns:webservice>http://tempuri.org</tns:webservice>
+    <tns:numClients>1</tns:numClients>
+  </tns:connections>
+  <tns:database>
+    <tns:user>tns:user</tns:user>
+    <tns:password>tns:password</tns:password>
+    <tns:url>http://tempuri.org</tns:url>
+  </tns:database>
+  <tns:servers>
+    <tns:server httpAddress="http://tempuri.org" name="" namespace="http://tempuri.org" service="" wsdl="http://tempuri.org"/>
+  </tns:servers>
+</tns:configuration>
