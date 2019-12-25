@@ -38,6 +38,9 @@ public class HybridServer {
 		threadPool = Executors.newFixedThreadPool(Integer.parseInt(properties.getProperty("numClients")));
 	}
 
+	public HybridServer(Configuration configuration) {
+	}
+
 	public int getPort() {
 		return port;
 	}
