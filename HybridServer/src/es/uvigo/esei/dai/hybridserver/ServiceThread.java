@@ -43,26 +43,21 @@ public class ServiceThread implements Runnable {
 						establecerContentType(response, resourceName);
 						response.setContent("Hybrid Server\n\nAlexandre Currás Rodríguez");
 						response.setStatus(HTTPResponseStatus.S200);
-					} else if (request.getResourceChain().contentEquals("/html")
-							|| request.getResourceChain().contentEquals("/xml")
-							|| request.getResourceChain().contentEquals("/xslt")
-							|| request.getResourceChain().contentEquals("/xsd")) {
+					} else if (validResourceChain(request.getResourceChain())) {
 						establecerContentType(response, resourceName);
 						response.setContent(cargarListadoHtml());
 						response.setStatus(HTTPResponseStatus.S200);
-					} else {
-						if (resourceNameValid(resourceName)) {
-							establecerContentType(response, resourceName);
-							String uuid = request.getResourceParameters().get("uuid");
-							if (this.controller.pageFound(uuid)) {
-								response.setContent(this.controller.get(uuid).getContent());
-								response.setStatus(HTTPResponseStatus.S200);
-							} else {
-								notFound404(response);
-							}
+					} else if (resourceNameValid(resourceName)) {
+						establecerContentType(response, resourceName);
+						String uuid = request.getResourceParameters().get("uuid");
+						if (this.controller.pageFound(uuid)) {
+							response.setContent(this.controller.get(uuid).getContent());
+							response.setStatus(HTTPResponseStatus.S200);
 						} else {
-							badRequest400(response);
+							notFound404(response);
 						}
+					} else {
+						badRequest400(response);
 					}
 					break;
 				case POST:
@@ -121,6 +116,11 @@ public class ServiceThread implements Runnable {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
+	}
+
+	private boolean validResourceChain(String resourceChain) {
+		return resourceChain.contentEquals("/html") || resourceChain.contentEquals("/xml")
+				|| resourceChain.contentEquals("/xslt") || resourceChain.contentEquals("/xsd");
 	}
 
 	private void establecerContentType(HTTPResponse response, String resourceName) {
