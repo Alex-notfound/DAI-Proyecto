@@ -9,6 +9,12 @@ import java.net.Socket;
 import java.sql.SQLException;
 import java.util.List;
 
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+
 import es.uvigo.esei.dai.hybridserver.entity.Page;
 import es.uvigo.esei.dai.hybridserver.http.HTTPParseException;
 import es.uvigo.esei.dai.hybridserver.http.HTTPRequest;
@@ -48,6 +54,11 @@ public class ServiceThread implements Runnable {
 						response.setContent(cargarListadoHtml());
 						response.setStatus(HTTPResponseStatus.S200);
 					} else if (resourceNameValid(resourceName)) {
+						if (resourceName.equals("xml") && request.getResourceParameters().containsKey("xslt")) {
+							// TODO: Validar y transformar
+							// SAXParsing.parseAndValidateWithInternalXSD(xmlPath, handler);
+							//transformWithXSLT(xmlSource, xsltSource, result);
+						}
 						establecerContentType(response, resourceName);
 						String uuid = request.getResourceParameters().get("uuid");
 						if (this.controller.pageFound(uuid)) {
@@ -77,6 +88,11 @@ public class ServiceThread implements Runnable {
 								badRequest400(response);
 							}
 						} else {
+							if (resourceName.equals("xml")) {
+								System.out.println(request.getContent());
+								// TODO: Validate XML
+								// SAXParsing.parseAndValidateWithExternalXSD(xmlPath, schemaPath, handler);
+							}
 							String uuid = this.controller.add(request.getResourceParameters().get(resourceName), null);
 							response.setContent("<a href=\"" + resourceName + "?uuid=" + uuid + "\">" + uuid + "</a>");
 							response.setStatus(HTTPResponseStatus.S200);
@@ -162,5 +178,12 @@ public class ServiceThread implements Runnable {
 	private void notFound404(HTTPResponse response) {
 		response.setContent("404 Not Found");
 		response.setStatus(HTTPResponseStatus.S404);
+	}
+
+	public static void transformWithXSLT(Source xmlSource, Source xsltSource, Result result)
+			throws TransformerException {
+		TransformerFactory tFactory = TransformerFactory.newInstance();
+		Transformer transformer = tFactory.newTransformer(xsltSource);
+		transformer.transform(xmlSource, result);
 	}
 }
