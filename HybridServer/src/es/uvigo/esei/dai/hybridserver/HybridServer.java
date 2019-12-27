@@ -39,6 +39,10 @@ public class HybridServer {
 	}
 
 	public HybridServer(Configuration configuration) {
+		this.controller = new Controller(configuration.getDbURL(), configuration.getDbUser(),
+				configuration.getDbPassword());
+		this.port = configuration.getHttpPort();
+		this.threadPool = Executors.newFixedThreadPool(configuration.getNumClients());
 	}
 
 	public int getPort() {
