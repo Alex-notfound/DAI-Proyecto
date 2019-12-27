@@ -25,12 +25,6 @@ public class HybridServer {
 		this.threadPool = Executors.newFixedThreadPool(50);
 	}
 
-	public HybridServer(Map<String, String> pages) {
-		this.controller = new Controller(new MemoryDAO(pages));
-		this.port = 8888;
-		this.threadPool = Executors.newFixedThreadPool(50);
-	}
-
 	public HybridServer(Properties properties) {
 		this.controller = new Controller(properties.getProperty("db.url"), properties.getProperty("db.user"),
 				properties.getProperty("db.password"));
