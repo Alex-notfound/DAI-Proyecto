@@ -29,3 +29,6 @@ CREATE  TABLE `hstestdb`.`XSLT` (
   `xsd` CHAR(36) NOT NULL ,
   PRIMARY KEY (`uuid`)
 );
+
+CREATE USER 'hsdb'@'localhost' IDENTIFIED BY 'hsdbpass';
+GRANT ALL PRIVILEGES ON hstestdb.* TO 'hsdb'@'localhost';
