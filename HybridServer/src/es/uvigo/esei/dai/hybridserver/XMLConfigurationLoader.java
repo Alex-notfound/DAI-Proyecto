@@ -19,10 +19,13 @@ package es.uvigo.esei.dai.hybridserver;
 
 import java.io.File;
 
+import es.uvigo.esei.dai.hybridserver.parser.SAXParsing;
+import es.uvigo.esei.dai.hybridserver.parser.SAXQuery;
+
 public class XMLConfigurationLoader {
-	public Configuration load(File xmlFile)
-	throws Exception {
-		// Implementar en la semana 9. 
-		return null;
+	public Configuration load(File xmlFile) throws Exception {
+		SAXQuery query = new SAXQuery();
+		SAXParsing.parseAndValidateWithInternalXSD(xmlFile.getPath(), query);
+		return query.getConfiguration();
 	}
 }
