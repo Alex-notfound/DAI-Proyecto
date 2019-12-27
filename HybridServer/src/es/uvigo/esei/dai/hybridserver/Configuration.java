@@ -61,8 +61,6 @@ public class Configuration {
 		this.servers = servers;
 	}
 
-
-
 	public int getHttpPort() {
 		return httpPort;
 	}
