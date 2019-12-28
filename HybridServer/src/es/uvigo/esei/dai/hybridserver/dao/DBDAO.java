@@ -10,27 +10,33 @@ import java.util.List;
 
 import es.uvigo.esei.dai.hybridserver.entity.Page;
 
-public class HTMLDAO implements DAO {
+public class DBDAO implements DAO {
 
 	private String db_url = null;
 	private String db_user = null;
 	private String db_password = null;
 
-	public HTMLDAO(String url, String user, String pass) {
+	public DBDAO(String url, String user, String pass) {
 		this.db_url = url;
 		this.db_user = user;
 		this.db_password = pass;
 	}
 
-	@Override
-	public void create(Page page) throws SQLException {
+	public void create(Page page, String table) throws SQLException {
 		try (Connection connection = DriverManager.getConnection(db_url, db_user, db_password)) {
-
-			String query = "INSERT INTO HTML (uuid, content) VALUES (?, ?)";
+			String query;
+			if (table.equals("XSLT")) {
+				query = "INSERT INTO " + table + " (uuid, content, xsd) VALUES (?, ?, ?)";
+			} else {
+				query = "INSERT INTO " + table + " (uuid, content) VALUES (?, ?)";
+			}
 
 			try (PreparedStatement statement = connection.prepareStatement(query)) {
 				statement.setString(1, page.getUuid());
 				statement.setString(2, page.getContent());
+				if (table.equals("XSLT")) {
+					statement.setString(3, page.getXsd());
+				}
 
 				if (statement.executeUpdate() != 1) {
 					throw new RuntimeException("Error en la inserción de página");
@@ -39,10 +45,9 @@ public class HTMLDAO implements DAO {
 		}
 	}
 
-	@Override
-	public void delete(Page page) throws SQLException {
+	public void delete(Page page, String table) throws SQLException {
 		try (Connection connection = DriverManager.getConnection(db_url, db_user, db_password)) {
-			String query = "DELETE FROM HTML WHERE uuid LIKE ?";
+			String query = "DELETE FROM " + table + " WHERE uuid LIKE ?";
 			try (PreparedStatement statement = connection.prepareStatement(query)) {
 				statement.setString(1, page.getUuid());
 
@@ -53,11 +58,10 @@ public class HTMLDAO implements DAO {
 		}
 	}
 
-	@Override
-	public Page get(String uuid) throws SQLException {
+	public Page get(String uuid, String table) throws SQLException {
 		try (Connection connection = DriverManager.getConnection(db_url, db_user, db_password)) {
 
-			String query = "SELECT * FROM HTML WHERE uuid LIKE ?";
+			String query = "SELECT * FROM " + table + " WHERE uuid LIKE ?";
 
 			try (PreparedStatement statement = connection.prepareStatement(query)) {
 				statement.setString(1, uuid);
@@ -74,11 +78,10 @@ public class HTMLDAO implements DAO {
 		}
 	}
 
-	@Override
-	public List<Page> list() throws SQLException {
+	public List<Page> list(String table) throws SQLException {
 		try (Connection connection = DriverManager.getConnection(db_url, db_user, db_password)) {
 
-			String query = "SELECT * FROM HTML";
+			String query = "SELECT * FROM " + table;
 
 			try (PreparedStatement statement = connection.prepareStatement(query)) {
 				try (ResultSet result = statement.executeQuery()) {
@@ -97,11 +100,10 @@ public class HTMLDAO implements DAO {
 		return new Page(result.getString("uuid"), result.getString("content"));
 	}
 
-	@Override
-	public boolean pageFound(String uuid) throws SQLException {
+	public boolean pageFound(String uuid, String table) throws SQLException {
 		try (Connection connection = DriverManager.getConnection(db_url, db_user, db_password)) {
 
-			String query = "SELECT * FROM HTML WHERE uuid LIKE ?";
+			String query = "SELECT * FROM " + table + " WHERE uuid LIKE ?";
 
 			try (PreparedStatement statement = connection.prepareStatement(query)) {
 				statement.setString(1, uuid);
@@ -115,8 +117,19 @@ public class HTMLDAO implements DAO {
 		return false;
 	}
 
-	@Override
-	public boolean xsdFound(String xsd) {
+	public boolean xsdFound(String xsd) throws SQLException {
+		try (Connection connection = DriverManager.getConnection(db_url, db_user, db_password)) {
+			String query = "SELECT * FROM XSD WHERE uuid LIKE ?";
+
+			try (PreparedStatement statement = connection.prepareStatement(query)) {
+				statement.setString(1, xsd);
+				try (ResultSet result = statement.executeQuery()) {
+					if (result.next()) {
+						return true;
+					}
+				}
+			}
+		}
 		return false;
 	}
 

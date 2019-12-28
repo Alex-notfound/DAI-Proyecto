@@ -7,15 +7,15 @@ import es.uvigo.esei.dai.hybridserver.entity.Page;
 
 public interface DAO {
 
-	public void create(Page page) throws SQLException;
+	public void create(Page page, String table) throws SQLException;
 
-	public void delete(Page page) throws SQLException;
+	public void delete(Page page, String table) throws SQLException;
 
-	public Page get(String uuid) throws SQLException;
+	public Page get(String uuid, String table) throws SQLException;
 
-	public List<Page> list() throws SQLException;
+	public List<Page> list(String table) throws SQLException;
 
-	public boolean pageFound(String uuid) throws SQLException;
+	public boolean pageFound(String uuid, String table) throws SQLException;
 
 	boolean xsdFound(String xsd) throws SQLException;
 
