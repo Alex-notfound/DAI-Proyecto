@@ -40,8 +40,8 @@ public class ServiceThread implements Runnable {
 			try {
 				reader = new InputStreamReader(socket.getInputStream());
 				HTTPRequest request = new HTTPRequest(reader);
-				controller.instantiateDao(request.getResourceName());
 				String resourceName = request.getResourceName();
+				String resourceNameUpper = resourceName.toUpperCase();
 
 				switch (request.getMethod()) {
 				case GET:
@@ -51,18 +51,21 @@ public class ServiceThread implements Runnable {
 						response.setStatus(HTTPResponseStatus.S200);
 					} else if (validResourceChain(request.getResourceChain())) {
 						establecerContentType(response, resourceName);
-						response.setContent(cargarListadoHtml());
+						response.setContent(cargarListadoHtml(resourceNameUpper));
 						response.setStatus(HTTPResponseStatus.S200);
 					} else if (resourceNameValid(resourceName)) {
+						String uuid = request.getResourceParameters().get("uuid");
 						if (resourceName.equals("xml") && request.getResourceParameters().containsKey("xslt")) {
 							// TODO: Validar y transformar
 							// SAXParsing.parseAndValidateWithInternalXSD(xmlPath, handler);
-							//transformWithXSLT(xmlSource, xsltSource, result);
+							// transformWithXSLT(xmlSource, xsltSource, result);
+							if (this.controller.pageFound(uuid, resourceNameUpper) && this.controller
+									.pageFound(request.getResourceParameters().get("xslt"), resourceNameUpper)) {
+							}
 						}
 						establecerContentType(response, resourceName);
-						String uuid = request.getResourceParameters().get("uuid");
-						if (this.controller.pageFound(uuid)) {
-							response.setContent(this.controller.get(uuid).getContent());
+						if (this.controller.pageFound(uuid, resourceNameUpper)) {
+							response.setContent(this.controller.get(uuid, resourceNameUpper).getContent());
 							response.setStatus(HTTPResponseStatus.S200);
 						} else {
 							notFound404(response);
@@ -77,7 +80,7 @@ public class ServiceThread implements Runnable {
 							if (request.getResourceParameters().containsKey("xsd")) {
 								if (controller.XsdFound(request.getResourceParameters().get("xsd"))) {
 									String uuid = this.controller.add(request.getResourceParameters().get(resourceName),
-											request.getResourceParameters().get("xsd"));
+											request.getResourceParameters().get("xsd"), resourceNameUpper);
 									response.setContent(
 											"<a href=\"" + resourceName + "?uuid=" + uuid + "\">" + uuid + "</a>");
 									response.setStatus(HTTPResponseStatus.S200);
@@ -93,7 +96,8 @@ public class ServiceThread implements Runnable {
 								// TODO: Validate XML
 								// SAXParsing.parseAndValidateWithExternalXSD(xmlPath, schemaPath, handler);
 							}
-							String uuid = this.controller.add(request.getResourceParameters().get(resourceName), null);
+							String uuid = this.controller.add(request.getResourceParameters().get(resourceName), null,
+									resourceNameUpper);
 							response.setContent("<a href=\"" + resourceName + "?uuid=" + uuid + "\">" + uuid + "</a>");
 							response.setStatus(HTTPResponseStatus.S200);
 						}
@@ -104,9 +108,9 @@ public class ServiceThread implements Runnable {
 				case DELETE:
 					if (resourceNameValid(resourceName)) {
 						String uuid = request.getResourceParameters().get("uuid");
-						if (uuid != null && this.controller.pageFound(uuid)) {
-							response.setContent(this.controller.get(uuid).getContent());
-							this.controller.delete(uuid);
+						if (uuid != null && this.controller.pageFound(uuid, resourceNameUpper)) {
+							response.setContent(this.controller.get(uuid, resourceNameUpper).getContent());
+							this.controller.delete(uuid, resourceNameUpper);
 							response.setStatus(HTTPResponseStatus.S200);
 						} else {
 							notFound404(response);
@@ -148,8 +152,8 @@ public class ServiceThread implements Runnable {
 
 	}
 
-	private String cargarListadoHtml() throws SQLException {
-		List<Page> allPages = this.controller.list();
+	private String cargarListadoHtml(String resourceNameUpper) throws SQLException {
+		List<Page> allPages = this.controller.list(resourceNameUpper);
 		if (allPages.isEmpty()) {
 			return "Hybrid Server";
 		}
