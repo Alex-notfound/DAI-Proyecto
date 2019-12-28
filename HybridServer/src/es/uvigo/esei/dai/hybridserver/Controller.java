@@ -5,68 +5,39 @@ import java.util.List;
 import java.util.UUID;
 
 import es.uvigo.esei.dai.hybridserver.dao.DAO;
-import es.uvigo.esei.dai.hybridserver.dao.HTMLDAO;
-import es.uvigo.esei.dai.hybridserver.dao.XMLDAO;
-import es.uvigo.esei.dai.hybridserver.dao.XSDDAO;
-import es.uvigo.esei.dai.hybridserver.dao.XSLTDAO;
+import es.uvigo.esei.dai.hybridserver.dao.DBDAO;
 import es.uvigo.esei.dai.hybridserver.entity.Page;
 
 public class Controller {
 
 	DAO dao;
-	String url;
-	String user;
-	String pass;
-
-	public Controller(DAO dao) {
-		this.dao = dao;
-	}
 
 	public Controller(String url, String user, String pass) {
-		this.url = url;
-		this.user = user;
-		this.pass = pass;
+		this.dao = new DBDAO(url, user, pass);
 	}
 
-	public void instantiateDao(String type) {
-		switch (type) {
-		case "html":
-			this.dao = new HTMLDAO(url, user, pass);
-			break;
-		case "xml":
-			this.dao = new XMLDAO(url, user, pass);
-			break;
-		case "xsd":
-			this.dao = new XSDDAO(url, user, pass);
-			break;
-		case "xslt":
-			this.dao = new XSLTDAO(url, user, pass);
-			break;
-		}
+	public Page get(String uuid, String table) throws SQLException {
+		return this.dao.get(uuid, table);
 	}
 
-	public Page get(String uuid) throws SQLException {
-		return this.dao.get(uuid);
+	public List<Page> list(String table) throws SQLException {
+		return this.dao.list(table);
 	}
 
-	public List<Page> list() throws SQLException {
-		return this.dao.list();
+	public boolean pageFound(String uuid, String table) throws SQLException {
+		return this.dao.pageFound(uuid, table);
 	}
 
-	public boolean pageFound(String uuid) throws SQLException {
-		return this.dao.pageFound(uuid);
+	public void delete(String uuid, String table) throws SQLException {
+		this.dao.delete(new Page(uuid), table);
 	}
 
-	public void delete(String uuid) throws SQLException {
-		this.dao.delete(new Page(uuid));
-	}
-
-	public String add(String content, String xsd) throws SQLException {
+	public String add(String content, String xsd, String table) throws SQLException {
 		String uuid = UUID.randomUUID().toString();
 		if (xsd == null) {
-			this.dao.create(new Page(uuid, content));
+			this.dao.create(new Page(uuid, content), table);
 		} else {
-			this.dao.create(new Page(uuid, content, xsd));
+			this.dao.create(new Page(uuid, content, xsd), table);
 		}
 		return uuid;
 	}
