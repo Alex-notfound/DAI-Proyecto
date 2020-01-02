@@ -42,7 +42,4 @@ public class Controller {
 		return uuid;
 	}
 
-	public boolean XsdFound(String xsd) throws SQLException {
-		return this.dao.xsdFound(xsd);
-	}
 }
