@@ -50,62 +50,25 @@ public class ServiceThread implements Runnable {
 				HTTPRequest request = new HTTPRequest(reader);
 				String resourceName = request.getResourceName();
 				String resourceNameUpper = resourceName.toUpperCase();
+				String uuid = request.getResourceParameters().get("uuid");
 
 				switch (request.getMethod()) {
 				case GET:
 					if (request.getResourceChain().equals("/")) {
 						establecerContentType(response, resourceName);
-						response.setContent("Hybrid Server\n\nAlexandre Currás Rodríguez");
-						response.setStatus(HTTPResponseStatus.S200);
+						ok200(response, "Hybrid Server\n\nAlexandre Currás Rodríguez");
 					} else if (validResourceChain(request.getResourceChain())) {
 						establecerContentType(response, resourceName);
-						response.setContent(cargarListadoHtml(resourceNameUpper));
-						response.setStatus(HTTPResponseStatus.S200);
+						ok200(response, cargarListadoHtml(resourceNameUpper));
+					} else if (resourceName.equals("xml") && request.getResourceParameters().containsKey("xslt")) {
+						// TODO: Establecer ContentType ?
+						getXMLWithXSLT(request, response);
 					} else if (resourceNameValid(resourceName)) {
-						String uuid = request.getResourceParameters().get("uuid");
-
-						if (resourceName.equals("xml") && request.getResourceParameters().containsKey("xslt")) {
-							// TODO: Validar y transformar
-							if (this.controller.pageFound(uuid, resourceNameUpper) && !this.controller
-									.pageFound(request.getResourceParameters().get("xslt"), "XSLT")) {
-								notFound404(response);
-								// TODO: Me mata?
-								break;
-							}
-							File f = new File("newXML");
-							try (PrintWriter out = new PrintWriter(f)) {
-								out.print(this.controller.get(uuid, "XML").getContent());
-								out.close();
-							}
-							// FIXME: Aiuda
-							SAXParsing.parseAndValidateWithInternalXSD(f.getAbsolutePath(), new DefaultHandler());
-							System.out.println("Validado con XSD interno");
-							Page p = this.controller.get(request.getResourceParameters().get("xslt"), "XSLT");
-							File xslt = new File("xslt");
-							try (PrintWriter out = new PrintWriter(xslt)) {
-								out.println(p.getContent());
-								out.close();
-							}
-							File xsd = new File("xsd");
-							try (PrintWriter out = new PrintWriter(xsd)) {
-								out.println(this.controller.get(p.getXsd(), "XSD").getContent());
-								out.close();
-							}
-							System.out.println("SECOND VALIDATE");
-							// TODO: Validar con XSD del XSLT
-							SAXParsing.parseAndValidateWithExternalXSD(f.getPath(), xsd.getPath(),
-									new DefaultHandler());
-							System.out.println("VALIDADO CON XSLT");
-							response.setContent(transformWithXSLT(f, xslt));
-							response.setStatus(HTTPResponseStatus.S200);
-						} else {
+						if (this.controller.pageFound(uuid, resourceNameUpper)) {
 							establecerContentType(response, resourceName);
-							if (this.controller.pageFound(uuid, resourceNameUpper)) {
-								response.setContent(this.controller.get(uuid, resourceNameUpper).getContent());
-								response.setStatus(HTTPResponseStatus.S200);
-							} else {
-								notFound404(response);
-							}
+							ok200(response, this.controller.get(uuid, resourceNameUpper).getContent());
+						} else {
+							notFound404(response);
 						}
 					} else {
 						badRequest400(response);
@@ -114,13 +77,13 @@ public class ServiceThread implements Runnable {
 				case POST:
 					if (resourceNameValid(resourceName) && request.getResourceParameters().containsKey(resourceName)) {
 						if (resourceName.equals("xslt")) {
+							// TODO: No hay que guardar XSLT ?
 							if (request.getResourceParameters().containsKey("xsd")) {
 								if (controller.pageFound(request.getResourceParameters().get("xsd"), "XSD")) {
-									String uuid = this.controller.add(request.getResourceParameters().get(resourceName),
+									uuid = this.controller.add(request.getResourceParameters().get(resourceName),
 											request.getResourceParameters().get("xsd"), resourceNameUpper);
-									response.setContent(
+									ok200(response,
 											"<a href=\"" + resourceName + "?uuid=" + uuid + "\">" + uuid + "</a>");
-									response.setStatus(HTTPResponseStatus.S200);
 								} else {
 									notFound404(response);
 								}
@@ -128,15 +91,14 @@ public class ServiceThread implements Runnable {
 								badRequest400(response);
 							}
 						} else {
-							if (resourceName.equals("xml")) {
-								System.out.println(request.getContent());
-								// TODO: Validate XML
-								// SAXParsing.parseAndValidateWithExternalXSD(xmlPath, schemaPath, handler);
-							}
-							String uuid = this.controller.add(request.getResourceParameters().get(resourceName), null,
+							// TODO: Validate XML?
+//							if (resourceName.equals("xml")) {
+//								System.out.println(request.getContent());
+							// SAXParsing.parseAndValidateWithExternalXSD(xmlPath, schemaPath, handler);
+//							}
+							uuid = this.controller.add(request.getResourceParameters().get(resourceName), null,
 									resourceNameUpper);
-							response.setContent("<a href=\"" + resourceName + "?uuid=" + uuid + "\">" + uuid + "</a>");
-							response.setStatus(HTTPResponseStatus.S200);
+							ok200(response, "<a href=\"" + resourceName + "?uuid=" + uuid + "\">" + uuid + "</a>");
 						}
 					} else {
 						badRequest400(response);
@@ -144,11 +106,9 @@ public class ServiceThread implements Runnable {
 					break;
 				case DELETE:
 					if (resourceNameValid(resourceName)) {
-						String uuid = request.getResourceParameters().get("uuid");
 						if (uuid != null && this.controller.pageFound(uuid, resourceNameUpper)) {
-							response.setContent(this.controller.get(uuid, resourceNameUpper).getContent());
+							ok200(response, this.controller.get(uuid, resourceNameUpper).getContent());
 							this.controller.delete(uuid, resourceNameUpper);
-							response.setStatus(HTTPResponseStatus.S200);
 						} else {
 							notFound404(response);
 						}
@@ -175,8 +135,45 @@ public class ServiceThread implements Runnable {
 
 			Writer writer = new OutputStreamWriter(socket.getOutputStream());
 			response.print(writer);
-		} catch (IOException e1) {
+		} catch (
+
+		IOException e1) {
 			e1.printStackTrace();
+		}
+	}
+
+	private void getXMLWithXSLT(HTTPRequest request, HTTPResponse response)
+			throws SQLException, ParserConfigurationException, SAXException, IOException, TransformerException {
+		String uuid = request.getResourceParameters().get("uuid");
+		// TODO: Validar y transformar
+		if (this.controller.pageFound(uuid, "XML")
+				&& !this.controller.pageFound(request.getResourceParameters().get("xslt"), "XSLT")) {
+			notFound404(response);
+		} else {
+			File f = new File("newXML");
+			try (PrintWriter out = new PrintWriter(f)) {
+				out.print(this.controller.get(uuid, "XML").getContent());
+				out.close();
+			}
+			// FIXME: Aiuda
+			SAXParsing.parseAndValidateWithInternalXSD(f.getAbsolutePath(), new DefaultHandler());
+			System.out.println("Validado con XSD interno");
+			Page p = this.controller.get(request.getResourceParameters().get("xslt"), "XSLT");
+			File xslt = new File("xslt");
+			try (PrintWriter out = new PrintWriter(xslt)) {
+				out.println(p.getContent());
+				out.close();
+			}
+			File xsd = new File("xsd");
+			try (PrintWriter out = new PrintWriter(xsd)) {
+				out.println(this.controller.get(p.getXsd(), "XSD").getContent());
+				out.close();
+			}
+			System.out.println("SECOND VALIDATE");
+			// TODO: Validar con XSD del XSLT
+			SAXParsing.parseAndValidateWithExternalXSD(f.getPath(), xsd.getPath(), new DefaultHandler());
+			System.out.println("VALIDADO CON XSLT");
+			ok200(response, transformWithXSLT(f, xslt));
 		}
 	}
 
@@ -233,6 +230,11 @@ public class ServiceThread implements Runnable {
 	private void notFound404(HTTPResponse response) {
 		response.setContent("404 Not Found");
 		response.setStatus(HTTPResponseStatus.S404);
+	}
+
+	private void ok200(HTTPResponse response, String content) {
+		response.setContent(content);
+		response.setStatus(HTTPResponseStatus.S200);
 	}
 
 }
