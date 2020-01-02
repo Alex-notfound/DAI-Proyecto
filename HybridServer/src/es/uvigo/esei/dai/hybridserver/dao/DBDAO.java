@@ -117,20 +117,4 @@ public class DBDAO implements DAO {
 		return false;
 	}
 
-	public boolean xsdFound(String xsd) throws SQLException {
-		try (Connection connection = DriverManager.getConnection(db_url, db_user, db_password)) {
-			String query = "SELECT * FROM XSD WHERE uuid LIKE ?";
-
-			try (PreparedStatement statement = connection.prepareStatement(query)) {
-				statement.setString(1, xsd);
-				try (ResultSet result = statement.executeQuery()) {
-					if (result.next()) {
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
-
 }
