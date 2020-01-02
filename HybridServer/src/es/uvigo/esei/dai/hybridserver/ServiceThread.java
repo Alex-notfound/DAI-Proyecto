@@ -1,19 +1,26 @@
 package es.uvigo.esei.dai.hybridserver;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.net.Socket;
 import java.sql.SQLException;
 import java.util.List;
 
-import javax.xml.transform.Result;
-import javax.xml.transform.Source;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 import es.uvigo.esei.dai.hybridserver.entity.Page;
 import es.uvigo.esei.dai.hybridserver.http.HTTPParseException;
@@ -55,20 +62,49 @@ public class ServiceThread implements Runnable {
 						response.setStatus(HTTPResponseStatus.S200);
 					} else if (resourceNameValid(resourceName)) {
 						String uuid = request.getResourceParameters().get("uuid");
+
 						if (resourceName.equals("xml") && request.getResourceParameters().containsKey("xslt")) {
 							// TODO: Validar y transformar
-							// SAXParsing.parseAndValidateWithInternalXSD(xmlPath, handler);
-							// transformWithXSLT(xmlSource, xsltSource, result);
-							if (this.controller.pageFound(uuid, resourceNameUpper) && this.controller
-									.pageFound(request.getResourceParameters().get("xslt"), resourceNameUpper)) {
+							if (this.controller.pageFound(uuid, resourceNameUpper) && !this.controller
+									.pageFound(request.getResourceParameters().get("xslt"), "XSLT")) {
+								notFound404(response);
+								// TODO: Me mata?
+								break;
 							}
-						}
-						establecerContentType(response, resourceName);
-						if (this.controller.pageFound(uuid, resourceNameUpper)) {
-							response.setContent(this.controller.get(uuid, resourceNameUpper).getContent());
+							File f = new File("newXML");
+							try (PrintWriter out = new PrintWriter(f)) {
+								out.print(this.controller.get(uuid, "XML").getContent());
+								out.close();
+							}
+							// FIXME: Aiuda
+							SAXParsing.parseAndValidateWithInternalXSD(f.getAbsolutePath(), new DefaultHandler());
+							System.out.println("Validado con XSD interno");
+							Page p = this.controller.get(request.getResourceParameters().get("xslt"), "XSLT");
+							File xslt = new File("xslt");
+							try (PrintWriter out = new PrintWriter(xslt)) {
+								out.println(p.getContent());
+								out.close();
+							}
+							File xsd = new File("xsd");
+							try (PrintWriter out = new PrintWriter(xsd)) {
+								out.println(this.controller.get(p.getXsd(), "XSD").getContent());
+								out.close();
+							}
+							System.out.println("SECOND VALIDATE");
+							// TODO: Validar con XSD del XSLT
+							SAXParsing.parseAndValidateWithExternalXSD(f.getPath(), xsd.getPath(),
+									new DefaultHandler());
+							System.out.println("VALIDADO CON XSLT");
+							response.setContent(transformWithXSLT(f, xslt));
 							response.setStatus(HTTPResponseStatus.S200);
 						} else {
-							notFound404(response);
+							establecerContentType(response, resourceName);
+							if (this.controller.pageFound(uuid, resourceNameUpper)) {
+								response.setContent(this.controller.get(uuid, resourceNameUpper).getContent());
+								response.setStatus(HTTPResponseStatus.S200);
+							} else {
+								notFound404(response);
+							}
 						}
 					} else {
 						badRequest400(response);
@@ -78,7 +114,7 @@ public class ServiceThread implements Runnable {
 					if (resourceNameValid(resourceName) && request.getResourceParameters().containsKey(resourceName)) {
 						if (resourceName.equals("xslt")) {
 							if (request.getResourceParameters().containsKey("xsd")) {
-								if (controller.XsdFound(request.getResourceParameters().get("xsd"))) {
+								if (controller.pageFound(request.getResourceParameters().get("xsd"), "XSD")) {
 									String uuid = this.controller.add(request.getResourceParameters().get(resourceName),
 											request.getResourceParameters().get("xsd"), resourceNameUpper);
 									response.setContent(
@@ -127,8 +163,13 @@ public class ServiceThread implements Runnable {
 			} catch (IOException | HTTPParseException | SQLException e) {
 				response.setContent("500 Internal Server Error");
 				response.setStatus(HTTPResponseStatus.S500);
+			} catch (ParserConfigurationException e) {
+				notFound404(response);
+			} catch (SAXException e) {
+				badRequest400(response);
+			} catch (TransformerException e) {
+				System.err.println("TransFormException");
 			}
-
 			response.setVersion("HTTP/1.1");
 
 			Writer writer = new OutputStreamWriter(socket.getOutputStream());
@@ -136,6 +177,15 @@ public class ServiceThread implements Runnable {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
+	}
+
+	private String transformWithXSLT(File f, File xslt) throws TransformerException {
+		TransformerFactory tFactory = TransformerFactory.newInstance();
+		Transformer transformer = tFactory.newTransformer(new StreamSource(xslt));
+		StringWriter writer = new StringWriter();
+		transformer.transform(new StreamSource(f), new StreamResult(writer));
+		return writer.toString();
+
 	}
 
 	private boolean validResourceChain(String resourceChain) {
@@ -184,10 +234,4 @@ public class ServiceThread implements Runnable {
 		response.setStatus(HTTPResponseStatus.S404);
 	}
 
-	public static void transformWithXSLT(Source xmlSource, Source xsltSource, Result result)
-			throws TransformerException {
-		TransformerFactory tFactory = TransformerFactory.newInstance();
-		Transformer transformer = tFactory.newTransformer(xsltSource);
-		transformer.transform(xmlSource, result);
-	}
 }
