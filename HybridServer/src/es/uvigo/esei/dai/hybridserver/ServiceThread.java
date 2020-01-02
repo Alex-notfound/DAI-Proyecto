@@ -28,6 +28,7 @@ import es.uvigo.esei.dai.hybridserver.http.HTTPRequest;
 import es.uvigo.esei.dai.hybridserver.http.HTTPResponse;
 import es.uvigo.esei.dai.hybridserver.http.HTTPResponseStatus;
 import es.uvigo.esei.dai.hybridserver.http.MIME;
+import es.uvigo.esei.dai.hybridserver.parser.SAXParsing;
 
 public class ServiceThread implements Runnable {
 
