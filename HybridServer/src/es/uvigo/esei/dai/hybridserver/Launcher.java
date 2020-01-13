@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class Launcher {
+	// TODO: Se debe leer fichero configuration.xml aqui???
+	// TODO: Error al ejecutar Week3test
+	// TODO: No encuentra los ficheros xml, xsd y xslt que deberian estar en raiz
 	public static void main(String[] args) {
 		if (args.length > 1) {
 			System.err.println(
