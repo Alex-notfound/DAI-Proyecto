@@ -1,12 +1,19 @@
 package es.uvigo.esei.dai.hybridserver;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URL;
+import java.security.Provider.Service;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import javax.xml.namespace.QName;
+
+import es.uvigo.esei.dai.hybridserver.webservices.PageService;
 
 public class HybridServer {
 
@@ -15,6 +22,7 @@ public class HybridServer {
 	private Thread serverThread;
 	private ExecutorService threadPool;
 	private Controller controller;
+	private String webServiceURL;
 
 	public HybridServer() {
 		this.controller = new Controller("jdbc:mysql://localhost:3306/hstestdb", "hsdb", "hsdbpass");
@@ -35,6 +43,7 @@ public class HybridServer {
 				configuration.getDbPassword());
 		this.port = configuration.getHttpPort();
 		this.threadPool = Executors.newFixedThreadPool(configuration.getNumClients());
+		this.webServiceURL = configuration.getWebServiceURL();
 	}
 
 	public int getPort() {
@@ -43,6 +52,12 @@ public class HybridServer {
 
 	public void start() {
 		Controller controller = this.controller;
+
+//		URL url = new URL("http://localhost:9876/calculus?wsdl");
+//		QName name = new QName(this.webServiceURL, "HtmlPageService");
+//		Service service = Service.create(url, name);
+//		PageService cs = service.getPort(PageService.class);
+
 		this.serverThread = new Thread() {
 			@Override
 			public void run() {
