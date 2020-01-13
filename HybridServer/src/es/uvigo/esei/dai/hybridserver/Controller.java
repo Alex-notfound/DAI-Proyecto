@@ -42,4 +42,8 @@ public class Controller {
 		return uuid;
 	}
 
+	public Page getXSLT(String uuid) throws SQLException {
+		return this.dao.getXSLT(uuid);
+	}
+
 }
