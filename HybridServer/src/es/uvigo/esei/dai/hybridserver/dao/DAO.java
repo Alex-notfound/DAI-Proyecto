@@ -17,4 +17,6 @@ public interface DAO {
 
 	public boolean pageFound(String uuid, String table) throws SQLException;
 
+	public Page getXSLT(String uuid) throws SQLException;
+
 }

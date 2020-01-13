@@ -117,4 +117,25 @@ public class DBDAO implements DAO {
 		return false;
 	}
 
+	@Override
+	public Page getXSLT(String uuid) throws SQLException {
+		try (Connection connection = DriverManager.getConnection(db_url, db_user, db_password)) {
+
+			String query = "SELECT * FROM XSLT WHERE uuid LIKE ?";
+
+			try (PreparedStatement statement = connection.prepareStatement(query)) {
+				statement.setString(1, uuid);
+
+				try (ResultSet result = statement.executeQuery()) {
+					if (result.next()) {
+						return new Page(result.getString("uuid"), result.getString("content"), result.getString("xsd"));
+					} else {
+						System.err.println("Page not found");
+						throw new RuntimeException();
+					}
+				}
+			}
+		}
+	}
+
 }
