@@ -1,11 +1,10 @@
 package es.uvigo.esei.dai.hybridserver;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.Socket;
@@ -54,7 +53,6 @@ public class ServiceThread implements Runnable {
 
 				switch (request.getMethod()) {
 				case GET:
-					// TODO: Establecer ContentType aqui para no repetir en cada condición?
 					if (request.getResourceChain().equals("/")) {
 						establecerContentType(response, resourceName);
 						ok200(response, "Hybrid Server\n\nAlexandre Currás Rodríguez");
@@ -62,7 +60,7 @@ public class ServiceThread implements Runnable {
 						establecerContentType(response, resourceName);
 						ok200(response, cargarListado(resourceNameUpper));
 					} else if (resourceName.equals("xml") && request.getResourceParameters().containsKey("xslt")) {
-						establecerContentType(response, resourceName);
+						establecerContentType(response, "html");
 						getXMLWithXSLT(request, response);
 					} else if (resourceNameValid(resourceName)) {
 						if (this.controller.pageFound(uuid, resourceNameUpper)) {
@@ -91,10 +89,6 @@ public class ServiceThread implements Runnable {
 								badRequest400(response);
 							}
 						} else {
-							// TODO: Debo validar XML en POST?
-//							if (resourceName.equals("xml")) {
-							// SAXParsing.parseAndValidateWithExternalXSD(xmlPath, schemaPath, handler);
-//							}
 							uuid = this.controller.add(request.getResourceParameters().get(resourceName), null,
 									resourceNameUpper);
 							ok200(response, "<a href=\"" + resourceName + "?uuid=" + uuid + "\">" + uuid + "</a>");
@@ -128,7 +122,7 @@ public class ServiceThread implements Runnable {
 			} catch (SAXException e) {
 				badRequest400(response);
 			} catch (TransformerException e) {
-				System.err.println("TransFormException");
+				System.err.println("TransformException");
 			}
 			response.setVersion("HTTP/1.1");
 
@@ -142,39 +136,19 @@ public class ServiceThread implements Runnable {
 	private void getXMLWithXSLT(HTTPRequest request, HTTPResponse response)
 			throws SQLException, ParserConfigurationException, SAXException, IOException, TransformerException {
 		String uuid = request.getResourceParameters().get("uuid");
-		// TODO: Validar y transformar
 		if (this.controller.pageFound(uuid, "XML")
 				&& !this.controller.pageFound(request.getResourceParameters().get("xslt"), "XSLT")) {
 			notFound404(response);
 		} else {
-			File f = new File("newXML");
-			try (PrintWriter out = new PrintWriter(f)) {
-				out.print(this.controller.get(uuid, "XML").getContent());
-				out.close();
-			}
-			// FIXME: Falla
-			SAXParsing.parseAndValidateWithInternalXSD(f.getAbsolutePath(), new DefaultHandler());
-			System.out.println("Validado con XSD interno");
-			Page p = this.controller.get(request.getResourceParameters().get("xslt"), "XSLT");
-			File xslt = new File("xslt");
-			try (PrintWriter out = new PrintWriter(xslt)) {
-				out.println(p.getContent());
-				out.close();
-			}
-			File xsd = new File("xsd");
-			try (PrintWriter out = new PrintWriter(xsd)) {
-				out.println(this.controller.get(p.getXsd(), "XSD").getContent());
-				out.close();
-			}
-			System.out.println("SECOND VALIDATE");
-			// TODO: Validar con XSD del XSLT
-			SAXParsing.parseAndValidateWithExternalXSD(f.getPath(), xsd.getPath(), new DefaultHandler());
-			System.out.println("VALIDADO CON XSLT");
-			ok200(response, transformWithXSLT(f, xslt));
+			Page pageXSLT = this.controller.getXSLT(request.getResourceParameters().get("xslt"));
+			String contentXML = this.controller.get(uuid, "XML").getContent();
+			Reader readerXSD = new StringReader(this.controller.get(pageXSLT.getXsd(), "XSD").getContent());
+			SAXParsing.parseAndValidateWithExternalXSD(new StringReader(contentXML), readerXSD, new DefaultHandler());
+			ok200(response, transformWithXSLT(new StringReader(contentXML), new StringReader(pageXSLT.getContent())));
 		}
 	}
 
-	private String transformWithXSLT(File f, File xslt) throws TransformerException {
+	private String transformWithXSLT(Reader f, Reader xslt) throws TransformerException {
 		TransformerFactory tFactory = TransformerFactory.newInstance();
 		Transformer transformer = tFactory.newTransformer(new StreamSource(xslt));
 		StringWriter writer = new StringWriter();
