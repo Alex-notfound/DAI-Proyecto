@@ -54,14 +54,15 @@ public class ServiceThread implements Runnable {
 
 				switch (request.getMethod()) {
 				case GET:
+					// TODO: Establecer ContentType aqui para no repetir en cada condición?
 					if (request.getResourceChain().equals("/")) {
 						establecerContentType(response, resourceName);
 						ok200(response, "Hybrid Server\n\nAlexandre Currás Rodríguez");
 					} else if (validResourceChain(request.getResourceChain())) {
 						establecerContentType(response, resourceName);
-						ok200(response, cargarListadoHtml(resourceNameUpper));
+						ok200(response, cargarListado(resourceNameUpper));
 					} else if (resourceName.equals("xml") && request.getResourceParameters().containsKey("xslt")) {
-						// TODO: Establecer ContentType ?
+						establecerContentType(response, resourceName);
 						getXMLWithXSLT(request, response);
 					} else if (resourceNameValid(resourceName)) {
 						if (this.controller.pageFound(uuid, resourceNameUpper)) {
@@ -77,7 +78,6 @@ public class ServiceThread implements Runnable {
 				case POST:
 					if (resourceNameValid(resourceName) && request.getResourceParameters().containsKey(resourceName)) {
 						if (resourceName.equals("xslt")) {
-							// TODO: No hay que guardar XSLT ?
 							if (request.getResourceParameters().containsKey("xsd")) {
 								if (controller.pageFound(request.getResourceParameters().get("xsd"), "XSD")) {
 									uuid = this.controller.add(request.getResourceParameters().get(resourceName),
@@ -91,9 +91,8 @@ public class ServiceThread implements Runnable {
 								badRequest400(response);
 							}
 						} else {
-							// TODO: Validate XML?
+							// TODO: Debo validar XML en POST?
 //							if (resourceName.equals("xml")) {
-//								System.out.println(request.getContent());
 							// SAXParsing.parseAndValidateWithExternalXSD(xmlPath, schemaPath, handler);
 //							}
 							uuid = this.controller.add(request.getResourceParameters().get(resourceName), null,
@@ -135,9 +134,7 @@ public class ServiceThread implements Runnable {
 
 			Writer writer = new OutputStreamWriter(socket.getOutputStream());
 			response.print(writer);
-		} catch (
-
-		IOException e1) {
+		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
 	}
@@ -155,7 +152,7 @@ public class ServiceThread implements Runnable {
 				out.print(this.controller.get(uuid, "XML").getContent());
 				out.close();
 			}
-			// FIXME: Aiuda
+			// FIXME: Falla
 			SAXParsing.parseAndValidateWithInternalXSD(f.getAbsolutePath(), new DefaultHandler());
 			System.out.println("Validado con XSD interno");
 			Page p = this.controller.get(request.getResourceParameters().get("xslt"), "XSLT");
@@ -183,7 +180,6 @@ public class ServiceThread implements Runnable {
 		StringWriter writer = new StringWriter();
 		transformer.transform(new StreamSource(f), new StreamResult(writer));
 		return writer.toString();
-
 	}
 
 	private boolean validResourceChain(String resourceChain) {
@@ -197,10 +193,9 @@ public class ServiceThread implements Runnable {
 		} else {
 			response.putParameter("Content-Type", MIME.APPLICATION_XML.getMime());
 		}
-
 	}
 
-	private String cargarListadoHtml(String resourceNameUpper) throws SQLException {
+	private String cargarListado(String resourceNameUpper) throws SQLException {
 		List<Page> allPages = this.controller.list(resourceNameUpper);
 		if (allPages.isEmpty()) {
 			return "Hybrid Server";
