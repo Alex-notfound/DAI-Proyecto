@@ -22,6 +22,7 @@ public class HybridServer {
 		this.threadPool = Executors.newFixedThreadPool(50);
 	}
 
+	// TODO: Este constructor se elimina?
 	public HybridServer(Properties properties) {
 		this.controller = new Controller(properties.getProperty("db.url"), properties.getProperty("db.user"),
 				properties.getProperty("db.password"));
