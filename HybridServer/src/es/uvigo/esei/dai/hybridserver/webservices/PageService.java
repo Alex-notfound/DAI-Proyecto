@@ -1,15 +1,15 @@
 package es.uvigo.esei.dai.hybridserver.webservices;
 
-import java.util.List;
+import java.sql.SQLException;
 
 import javax.jws.WebService;
 
 @WebService
 public interface PageService {
 
-	public List<String> getUuids(String table);
+	public String[] getUuids(String table) throws SQLException;
 
-	public String getContent(String uuid, String table);
+	public String getContent(String uuid, String table) throws SQLException;
 
-	public String getUuid();
+	public String getUuid(String uuid) throws SQLException;
 }
