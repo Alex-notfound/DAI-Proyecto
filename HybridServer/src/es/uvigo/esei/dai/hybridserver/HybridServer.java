@@ -1,19 +1,16 @@
 package es.uvigo.esei.dai.hybridserver;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.URL;
-import java.security.Provider.Service;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import javax.xml.namespace.QName;
+import javax.xml.ws.Endpoint;
 
-import es.uvigo.esei.dai.hybridserver.webservices.PageService;
+import es.uvigo.esei.dai.hybridserver.webservices.ImplPageService;
 
 public class HybridServer {
 
@@ -23,6 +20,7 @@ public class HybridServer {
 	private ExecutorService threadPool;
 	private Controller controller;
 	private String webServiceURL;
+	private Endpoint ep;
 
 	public HybridServer() {
 		this.controller = new Controller("jdbc:mysql://localhost:3306/hstestdb", "hsdb", "hsdbpass");
@@ -30,7 +28,6 @@ public class HybridServer {
 		this.threadPool = Executors.newFixedThreadPool(50);
 	}
 
-	// TODO: Este constructor se elimina?
 	public HybridServer(Properties properties) {
 		this.controller = new Controller(properties.getProperty("db.url"), properties.getProperty("db.user"),
 				properties.getProperty("db.password"));
@@ -53,11 +50,8 @@ public class HybridServer {
 	public void start() {
 		Controller controller = this.controller;
 
-//		URL url = new URL("http://localhost:9876/calculus?wsdl");
-//		QName name = new QName(this.webServiceURL, "HtmlPageService");
-//		Service service = Service.create(url, name);
-//		PageService cs = service.getPort(PageService.class);
-
+		this.ep = Endpoint.publish(this.webServiceURL,
+				new ImplPageService("jdbc:mysql://localhost:3306/hstestdb", "hsdb", "hsdbpass"));
 		this.serverThread = new Thread() {
 			@Override
 			public void run() {
@@ -81,7 +75,6 @@ public class HybridServer {
 
 	public void stop() {
 		this.stop = true;
-
 		try (Socket socket = new Socket("localhost", port)) {
 			// Esta conexión se hace, simplemente, para "despertar" el hilo
 			// servidor
@@ -103,5 +96,6 @@ public class HybridServer {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		this.ep.stop();
 	}
 }
