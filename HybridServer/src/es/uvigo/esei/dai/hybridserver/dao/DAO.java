@@ -19,4 +19,16 @@ public interface DAO {
 
 	public Page getXSLT(String uuid) throws SQLException;
 
+	void create(Page page);
+
+	void delete(Page page);
+
+	Page get(String uuid);
+
+	List<Page> list();
+
+	boolean pageFound(String uuid);
+
+	boolean xsdFound(String xsd);
+
 }

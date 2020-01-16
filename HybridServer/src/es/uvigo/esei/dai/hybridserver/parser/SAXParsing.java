@@ -63,4 +63,28 @@ public class SAXParsing {
 		// Parsing
 		xmlReader.parse(new InputSource(characterStream));
 	}
+
+	public static void parseAndValidateWithExternalXSD(File xmlFile, String schemaPath, ContentHandler handler)
+			throws ParserConfigurationException, SAXException, IOException {
+		// ConstrucciÃ³n del schema
+		SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+		Schema schema = schemaFactory.newSchema(new File(schemaPath));
+		// ConstrucciÃ³n del parser del documento. Se establece el esquema y se activa
+		// la validaciÃ³n y comprobaciÃ³n de namespaces
+		SAXParserFactory parserFactory = SAXParserFactory.newInstance();
+		parserFactory.setValidating(false);
+		parserFactory.setNamespaceAware(true);
+		parserFactory.setSchema(schema);
+
+		// Se aÃ±ade el manejador de errores
+		SAXParser parser = parserFactory.newSAXParser();
+		XMLReader xmlReader = parser.getXMLReader();
+		xmlReader.setContentHandler(handler);
+		xmlReader.setErrorHandler(new SimpleErrorHandler());
+
+		// Parsing
+		try (FileReader fileReader = new FileReader(xmlFile)) {
+			xmlReader.parse(new InputSource(fileReader));
+		}
+	}
 }

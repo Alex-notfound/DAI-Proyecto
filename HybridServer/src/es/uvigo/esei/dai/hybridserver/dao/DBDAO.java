@@ -70,8 +70,7 @@ public class DBDAO implements DAO {
 					if (result.next()) {
 						return convertResultIntoPage(result);
 					} else {
-						System.err.println("Page not found");
-						throw new RuntimeException();
+						return null;
 					}
 				}
 			}
@@ -130,12 +129,39 @@ public class DBDAO implements DAO {
 					if (result.next()) {
 						return new Page(result.getString("uuid"), result.getString("content"), result.getString("xsd"));
 					} else {
-						System.err.println("Page not found");
-						throw new RuntimeException();
+						return null;
 					}
 				}
 			}
 		}
+	}
+
+	@Override
+	public void create(Page page) {
+	}
+
+	@Override
+	public void delete(Page page) {
+	}
+
+	@Override
+	public Page get(String uuid) {
+		return null;
+	}
+
+	@Override
+	public List<Page> list() {
+		return null;
+	}
+
+	@Override
+	public boolean pageFound(String uuid) {
+		return false;
+	}
+
+	@Override
+	public boolean xsdFound(String xsd) {
+		return false;
 	}
 
 }

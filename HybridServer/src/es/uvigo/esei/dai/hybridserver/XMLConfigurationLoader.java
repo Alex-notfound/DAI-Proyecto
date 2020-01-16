@@ -25,7 +25,7 @@ import es.uvigo.esei.dai.hybridserver.parser.SAXQuery;
 public class XMLConfigurationLoader {
 	public Configuration load(File xmlFile) throws Exception {
 		SAXQuery query = new SAXQuery();
-		SAXParsing.parseAndValidateWithInternalXSD(xmlFile.getPath(), query);
+		SAXParsing.parseAndValidateWithExternalXSD(xmlFile, "configuration.xsd", query);
 		return query.getConfiguration();
 	}
 }

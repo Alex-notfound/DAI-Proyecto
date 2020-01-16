@@ -9,7 +9,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.net.Socket;
 import java.sql.SQLException;
-import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
@@ -48,23 +47,26 @@ public class ServiceThread implements Runnable {
 				reader = new InputStreamReader(socket.getInputStream());
 				HTTPRequest request = new HTTPRequest(reader);
 				String resourceName = request.getResourceName();
-				String resourceNameUpper = resourceName.toUpperCase();
+				String resourceNameUpper = "HTML";
+				if (resourceName != null) {
+					resourceNameUpper = resourceName.toUpperCase();
+				}
 				String uuid = request.getResourceParameters().get("uuid");
 
 				switch (request.getMethod()) {
 				case GET:
 					if (request.getResourceChain().equals("/")) {
-						establecerContentType(response, resourceName);
+						establecerContentType(request, response, "");
 						ok200(response, "Hybrid Server\n\nAlexandre Currás Rodríguez");
 					} else if (validResourceChain(request.getResourceChain())) {
-						establecerContentType(response, resourceName);
-						ok200(response, cargarListado(resourceNameUpper));
+						establecerContentType(request, response, resourceName);
+						ok200(response, this.controller.list(resourceNameUpper));
 					} else if (resourceName.equals("xml") && request.getResourceParameters().containsKey("xslt")) {
-						establecerContentType(response, "html");
+						establecerContentType(request, response, "html");
 						getXMLWithXSLT(request, response);
 					} else if (resourceNameValid(resourceName)) {
 						if (this.controller.pageFound(uuid, resourceNameUpper)) {
-							establecerContentType(response, resourceName);
+							establecerContentType(request, response, resourceName);
 							ok200(response, this.controller.get(uuid, resourceNameUpper).getContent());
 						} else {
 							notFound404(response);
@@ -136,8 +138,8 @@ public class ServiceThread implements Runnable {
 	private void getXMLWithXSLT(HTTPRequest request, HTTPResponse response)
 			throws SQLException, ParserConfigurationException, SAXException, IOException, TransformerException {
 		String uuid = request.getResourceParameters().get("uuid");
-		if (this.controller.pageFound(uuid, "XML")
-				&& !this.controller.pageFound(request.getResourceParameters().get("xslt"), "XSLT")) {
+		if (!this.controller.pageFound(uuid, "XML")
+				|| !this.controller.pageFound(request.getResourceParameters().get("xslt"), "XSLT")) {
 			notFound404(response);
 		} else {
 			Page pageXSLT = this.controller.getXSLT(request.getResourceParameters().get("xslt"));
@@ -161,25 +163,12 @@ public class ServiceThread implements Runnable {
 				|| resourceChain.contentEquals("/xslt") || resourceChain.contentEquals("/xsd");
 	}
 
-	private void establecerContentType(HTTPResponse response, String resourceName) {
-		if (resourceName.equals("html")) {
+	private void establecerContentType(HTTPRequest request, HTTPResponse response, String resourceName) {
+		if (resourceName.equals("html") || request.getResourceParameters().isEmpty()) {
 			response.putParameter("Content-Type", MIME.TEXT_HTML.getMime());
 		} else {
 			response.putParameter("Content-Type", MIME.APPLICATION_XML.getMime());
 		}
-	}
-
-	private String cargarListado(String resourceNameUpper) throws SQLException {
-		List<Page> allPages = this.controller.list(resourceNameUpper);
-		if (allPages.isEmpty()) {
-			return "Hybrid Server";
-		}
-		String content = "<html><head></head><body>";
-		for (Page page : allPages) {
-			content += "<p><a href=\\html?uuid=" + page.getUuid() + ">" + page.getUuid() + "</a></p>";
-		}
-		content += "</body></html>";
-		return content;
 	}
 
 	private boolean resourceNameValid(String resourceName) {
